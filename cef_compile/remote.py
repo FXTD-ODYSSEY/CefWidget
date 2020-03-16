@@ -49,7 +49,7 @@ def createBrowser():
     }
     cef.Initialize(settings)
     
-    url = sys.argv[3] if sys.argv[3] else "https://github.com/FXTD-ODYSSEY/CefWidget"
+    url = sys.argv[3] if len(sys.argv) > 3 else "https://github.com/FXTD-ODYSSEY/CefWidget"
     browser = cef.CreateBrowserSync(windowInfo,url=url)
 
     port = int(sys.argv[2])
@@ -70,21 +70,27 @@ def createBrowser():
             except:
                 # NOTE 说明 rpyc 关闭 | 跳出循环
                 break
-            
+
             if url and url != browser.GetUrl():
                 browser.LoadUrl(url)
             elif conn.root.reloadCall():
                 browser.Reload()
+
             elif conn.root.backCall() and browser.CanGoBack():
                 browser.GoBack()
+                conn.root.updateUrl(browser.GetUrl())
+
             elif conn.root.forwardCall() and browser.CanGoForward():
                 browser.onForward()
+                conn.root.updateUrl(browser.GetUrl())
+
             elif conn.root.focusInCall():
                 browser.SetFocus(True)
                 if WINDOWS:
                     WindowUtils.OnSetFocus(winId, 0, 0, 0)
             elif conn.root.focusOutCall():
                 browser.SetFocus(False)
+                
             elif size:
                 width,height = size
                 if WINDOWS:

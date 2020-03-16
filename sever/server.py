@@ -17,30 +17,83 @@ import rpyc
 from rpyc import Service  
 from rpyc.utils.server import ThreadedServer  
 
-class TestService(Service):  
-    resize = False
-    url = sys.argv[2] if sys.argv[2] else ""
-    
-    def exposed_onResizeCall(self):
-        TestService.resize = True
-        return TestService.resize
+print sys.argv
 
-    def exposed_resizeCall(self):  
-        if TestService.resize:
-            TestService.resize = False
+class CefService(Service):  
+
+    focusOut = False
+    focusIn = False
+    forward = False
+    back = False
+    reload_ = False
+    resize = False
+    size = None
+    url_flag = False    
+    url = sys.argv[2] if len(sys.argv) > 2 else "https://github.com/FXTD-ODYSSEY/CefWidget"
+    
+    def exposed_onFocusOutCall(self):
+        CefService.focusOut = True
+
+    def exposed_focusOutCall(self):
+        if CefService.focusOut:
+            CefService.focusOut = False
             return True
 
-    def exposed_onLoadUrl(self,_url):
-        TestService.url = _url
+    def exposed_onFocusInCall(self):
+        CefService.focusIn = True
+
+    def exposed_focusInCall(self):
+        if CefService.focusIn:
+            CefService.focusIn = False
+            return True
+
+    def exposed_onForwardCall(self):
+        CefService.forward = True
+
+    def exposed_forwardCall(self):
+        if CefService.forward:
+            CefService.forward = False
+            return True
+
+    def exposed_onBackCall(self):
+        CefService.back = True
+
+    def exposed_backCall(self):
+        if CefService.back:
+            CefService.back = False
+            return True
+
+    def exposed_onReloadCall(self):
+        CefService.reload_ = True
+
+    def exposed_reloadCall(self):
+        if CefService.reload_:
+            CefService.reload_ = False
+            return True
+
+    def exposed_onResizeCall(self,width,height):
+        CefService.resize = True
+        CefService.size = (width,height)
+
+    def exposed_resizeCall(self):  
+        if CefService.resize:
+            CefService.resize = None
+            return CefService.size
+
+    def exposed_onLoadUrl(self,url):
+        CefService.url = url
+        CefService.url_flag = True
 
     def exposed_loadUrl(self):
-        if TestService.url:
-            _url = TestService.url
-            TestService.url = None
-            return _url
+        if CefService.url_flag:
+            CefService.url_flag = False 
+            return CefService.url
 
     def exposed_getUrl(self):
-        return TestService.url
+        return CefService.url
+
+    def exposed_updateUrl(self,url):
+        CefService.url = url
 
     def exposed_stop(self):
         pid = os.getpid()
@@ -53,5 +106,5 @@ class TestService(Service):
         else:
             os.kill(pid, signal.SIGTERM)
 
-sr = ThreadedServer(TestService, port=int(sys.argv[1]), auto_register=False)  
+sr = ThreadedServer(CefService, port=int(sys.argv[1]), auto_register=False)  
 sr.start()

@@ -16,8 +16,6 @@ import ctypes
 import platform
 import subprocess
 
-
-
 DIR = os.path.dirname(__file__)
 
 try:
@@ -25,14 +23,18 @@ try:
     import rpyc
 except ImportError:
     MODULE = os.path.join(DIR,"_vendor")
-    if MODULE not in sys.path:
+    if MODULE not in sys.path and os.path.exists(MODULE):
         sys.path.append(MODULE)
 
 import rpyc
-from Qt import QtGui
-from Qt import QtCore
-from Qt import QtWidgets
+
+from Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
 from Qt import __binding__
+
+# from PySide.QtGui import *
+# from PySide.QtCore import *
 
 PYQT4 = (__binding__ == "PyQt4")
 PYQT5 = (__binding__ == "PyQt5")
@@ -43,13 +45,8 @@ WINDOWS = (platform.system() == "Windows")
 LINUX = (platform.system() == "Linux")
 MAC = (platform.system() == "Darwin")
 
-CefWidgetParent = QtWidgets.QWidget
-if LINUX and (PYQT4 or PYSIDE):
-    # noinspection PyUnresolvedReferences
-    CefWidgetParent = QX11EmbedContainer
-
-class CefBrowser(QtWidgets.QWidget):
-    def __init__(self, parent = None , port=4433):
+class CefBrowser(QWidget):
+    def __init__(self, parent = None , port=4437):
         super(CefBrowser, self).__init__(parent)
         self.port = port
 
@@ -60,14 +57,11 @@ class CefBrowser(QtWidgets.QWidget):
 
         if (PYSIDE2 or PYQT5) and LINUX:
             # noinspection PyUnresolvedReferences
-            self.hidden_window = QtWidgets.QWindow()
+            self.hidden_window = QWindow()
 
-        cef = os.path.join(DIR,"cefapp")
-        cefapp = os.path.join(cef,"cefapp.exe")
-        # self.sever_process = subprocess.Popen(' %s %s %s' % (sys.executable,server,port),shell=True)
         # NOTE 开启 rpyc 服务
-        server = os.path.join(cef,"server.exe")
-        self.sever_process = subprocess.Popen('"%s" %s %s' % (server,port,url),shell=True)
+        server = os.path.join(DIR,"server.py")
+        self.sever_process = subprocess.Popen('"%s" "%s" %s %s' % (sys.executable,server,port,url),shell=True)
 
         try:
             self.conn = rpyc.connect('localhost',port)  
@@ -79,11 +73,13 @@ class CefBrowser(QtWidgets.QWidget):
 
         # NOTE 开启 cef 浏览器
         winId = int(self.getHandle())
-        self.browser_process = subprocess.Popen('"%s" %s %s %s' % (cefapp,winId,port,url),shell=True)
+        cefapp = os.path.join(DIR,"remote.py")
+        self.browser_process = subprocess.Popen('"%s" "%s" %s %s %s' % (sys.executable,cefapp,winId,port,url),shell=True)
         self.window().installEventFilter(self)
 
     def eventFilter(self,receiver,event):
-        if QtGui.QEvent.Type.Close == event.type() or QtGui.QEvent.Type.ChildRemoved == event.type():
+        # NOTE 71 为 childRemvoe
+        if QCloseEvent == type(event) or event.type() == 71:
             # NOTE 彻底关闭所有服务
             self.conn.root.stop()  
             self.sever_process.terminate()
@@ -95,13 +91,23 @@ class CefBrowser(QtWidgets.QWidget):
         self.conn.root.onLoadUrl(url)  
 
     def getUrl(self):
-        pass
+        return self.conn.root.getUrl()  
 
-    def refresh(self):
-        pass
+    def reload(self):
+        return self.conn.root.onReloadCall()  
 
     def focusIn(self):
         self.setFocus()
+        return self.conn.root.onFocusInCall()  
+
+    def focusOut(self):
+        return self.conn.root.onFocusOutCall()  
+
+    def backNavigate(self):
+        return self.conn.root.onBackCall()  
+
+    def forwardNavigate(self):
+        return self.conn.root.onForwardCall()  
 
     def getHandle(self):
         if self.hidden_window:
@@ -132,47 +138,9 @@ class CefBrowser(QtWidgets.QWidget):
 
     def moveEvent(self, event):
         if hasattr(self,"conn"):
-            self.conn.root.onResizeCall()  
+            self.conn.root.onResizeCall(self.width(),self.height())  
 
     def resizeEvent(self, event):
         if hasattr(self,"conn"):
-            self.conn.root.onResizeCall()  
-
-
-class TestWidget(QtWidgets.QWidget):
-    def __init__(self, parent = None):
-        super(TestWidget, self).__init__(parent)
-        self.setGeometry(150,150, 800, 800)
-
-        self.view = CefBrowser(self)
-        
-        m_vbox = QtWidgets.QVBoxLayout()
-        m_button = QtWidgets.QPushButton("Change Url")
-        m_button.clicked.connect(lambda:self.view.loadUrl(r"http://editor.l0v0.com/"))
-        m_button.setMaximumHeight(100)
-        
-        m_vbox.addWidget(m_button)
-        m_vbox.addWidget(self.view)
-    
-        self.setLayout(m_vbox)
-
-        self.view.embed()
-
-def main():
-    # app = QApplication(sys.argv)
-    ex = TestWidget()
-    ex.show()
-    # sys.exit(app.exec_())
-    
-if __name__ == '__main__':
-   main()
-
-# import sys
-# MODULE = r""
-# if MODULE not in sys.path:
-#     sys.path.append(MODULE)
-
-# import CefBrowser
-# reload(CefBrowser)
-# CefBrowser.main()
-
+            size = event.size()
+            self.conn.root.onResizeCall(size.width(),size.height())  
