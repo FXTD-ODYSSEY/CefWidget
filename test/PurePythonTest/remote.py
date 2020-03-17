@@ -10,17 +10,8 @@ __date__ = '2020-03-13 10:27:56'
 import os
 import sys
 import time
-import uuid
-import errno
 import socket
-import ctypes
-import signal
 import platform
-
-# import rpyc
-# from rpyc import Service  
-# from rpyc.utils.server import ThreadedServer  
-# from rpyc.lib.compat import get_exc_errno
 
 from cefpython3 import cefpython as cef
 
@@ -37,7 +28,7 @@ class RemoteBrowser(object):
         self.host = socket.gethostname() 
         self.port= int(sys.argv[1])
         self.s.bind((self.host, self.port))   
-        self.s.listen(1)
+        self.s.listen(2)
         
         # NOTE Initialize CEF
         cef.Initialize({
@@ -84,17 +75,7 @@ class RemoteBrowser(object):
             browser.SetBounds(0, 0, float(width), float(height))
         browser.NotifyMoveOrResizeStarted()
 
-    def createBrowser(self,winId,url):
-        # NOTE 创建浏览器
-        UUID = str(uuid.uuid4())
-        windowInfo = cef.WindowInfo()
-        # windowInfo.SetAsChild(winId)
-        browser = cef.CreateBrowserSync(windowInfo,self.browser_settings,url=url)
-        self.browser_dict[UUID] = (browser,winId)
-        return UUID 
-
     def start(self):
-        num = 0
         ret = None
         self.update_time = time.time()
         self.connect_time = time.time()
@@ -105,11 +86,8 @@ class RemoteBrowser(object):
 
             cef.MessageLoopWork()
             
-            if time.time() - self.connect_time < .5:continue
-            self.connect_time = time.time()
-
-            num +=1
-            print num
+            # if time.time() - self.connect_time < .1:continue
+            # self.connect_time = time.time()
 
             try:
                 client,addr = self.s.accept()     
@@ -118,33 +96,28 @@ class RemoteBrowser(object):
 
             data = client.recv(1024)
         
-            print "data",data
             # NOTE change to specfic type
             arg_list = [arg for arg in data.split(";")]
             args = self.browser_dict.get(arg_list[1])
             func_name = arg_list[0]
             if func_name == "stop":
-                # client.close()    
                 break
             elif func_name == "createBrowser" and not args:
                 url = arg_list[2]
                 winId = int(arg_list[1])
                 # NOTE 创建浏览器
-                UUID = str(uuid.uuid4())
+                UUID = arg_list[3]
                 windowInfo = cef.WindowInfo()
-                # windowInfo.SetAsChild(winId)
+                windowInfo.SetAsChild(winId)
                 browser = cef.CreateBrowserSync(windowInfo,self.browser_settings,url=url)
                 self.browser_dict[UUID] = (browser,winId)
-                ret = UUID
             elif func_name in self.callback_dict and args:
                 browser,winId = args
                 ret = self.callback_dict[func_name](browser,winId,*arg_list[2:])
             else:
-                # client.close()    
                 continue
 
             client.send(str(ret))
-            # client.close()    
         
         client.close() 
         self.s.close()

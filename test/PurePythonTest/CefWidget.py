@@ -12,6 +12,7 @@ CefWidget Embeded browser to any software
 import os
 import sys
 import time
+import uuid
 import ctypes
 import socket
 import platform
@@ -51,19 +52,21 @@ class CefBrowser(QWidget):
         super(CefBrowser, self).__init__(parent)
         self.embeded = False
         self.hidden_window = None  # Required for PyQt5 on Linux
+        self.resize_flag = False  # Required for PyQt5 on Linux
         self.port = None  # Required for PyQt5 on Linux
     
-    def connect(self,data):
-        # sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) #在客户端开启心跳维护
+    def connect(self,data,recv=False):
+        ret = None
         sock = socket.socket()
-        # sock.setblocking(0)
         sock.connect((socket.gethostname(), self.port))
         sock.send(data)
-        ret = sock.recv(1024)
-        print "connect"
+
+        if recv:
+            ret = sock.recv(1024)
+
         sock.close()
         del sock
+
         return ret
 
     def embed(self,port=None,url=""):
@@ -73,19 +76,21 @@ class CefBrowser(QWidget):
             # noinspection PyUnresolvedReferences
             self.hidden_window = QWindow()
 
-
         # NOTE 开启 cef 浏览器
         winId = int(self.getHandle())
+        self.browser_uuid = uuid.uuid4()
         url = url if url else "https://github.com/FXTD-ODYSSEY/CefWidget"
-        self.browser_uuid = self.connect("createBrowser;%s;%s" % (winId,url))
-        print "browser_uuid",self.browser_uuid
+        self.connect("createBrowser;%s;%s;%s" % (winId,url,self.browser_uuid))
         self.window().installEventFilter(self)
 
     def eventFilter(self,receiver,event):
         # NOTE 71 为 childRemvoe
         if QCloseEvent == type(event) or event.type() == 71:
             # NOTE 彻底关闭所有服务
-            self.connect("stop;%s" % self.browser_uuid)
+            try:
+                self.connect("stop;%s" % self.browser_uuid)
+            except:
+                pass
             self.deleteLater()
         return False
 
@@ -93,7 +98,7 @@ class CefBrowser(QWidget):
         self.connect("loadUrl;%s;%s" % (self.browser_uuid,url))
 
     def getUrl(self):
-        self.connect("getUrl;%s" % self.browser_uuid)
+        return self.connect("getUrl;%s" % self.browser_uuid,recv=True)
 
     def reload(self):
         self.connect("reload;%s" % self.browser_uuid)
@@ -139,11 +144,13 @@ class CefBrowser(QWidget):
                         self.winId(), None)
 
     def moveEvent(self, event):
-        self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
+        if self.resize_flag:
+            self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
 
     def resizeEvent(self, event):
-        size = event.size()
-        self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
+        if self.resize_flag:
+            size = event.size()
+            self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
 
 
 def autoCefEmbed(port=None,url="",cefHandler=None):
@@ -156,15 +163,25 @@ def autoCefEmbed(port=None,url="",cefHandler=None):
 
             remote = os.path.join(DIR,"remote.py")
             
+            # NOTE 必须要显示出来，否则嵌入操作可能会出错
+            visible = self.isVisible()
+            if not visible:
+                self.show()
+
             server = subprocess.Popen([sys.executable,remote,str(port)],shell=True)
-            print server
             # NOTE 自动嵌入 cef 
-            for cef in findAllCefBrowser(self):
+            cef_list = findAllCefBrowser(self)
+            for cef in cef_list:
                 check = None
                 if callable(cefHandler):
                     check = cefHandler(cef,port,url)
                 if check is None and not cef.embeded:
                     cef.embed(port,url)
+                    # NOTE 启用 resize 事件触发 
+                    cef.resize_flag = True
+
+            if not visible:
+                self.hide()
 
             return ret
         return wrapper
@@ -194,6 +211,7 @@ class TestWidget(QWidget):
         self.setGeometry(150,150, 800, 800)
 
         self.view = CefBrowser(self)
+        self.view2 = CefBrowser(self)
         
         m_vbox = QVBoxLayout()
         m_button = QPushButton("Change Url")
@@ -201,7 +219,7 @@ class TestWidget(QWidget):
         m_vbox.addWidget(m_button)
 
         m_button = QPushButton("Change Url2")
-        m_button.clicked.connect(lambda:self.view.loadUrl(r"http://www.baidu.com/"))
+        m_button.clicked.connect(lambda:self.view.loadUrl(r"http://www.bing.com/"))
         m_vbox.addWidget(m_button)
         
         m_button = QPushButton("Reload Url")
@@ -219,10 +237,46 @@ class TestWidget(QWidget):
         m_button = QPushButton("get Url")
         m_button.clicked.connect(lambda:sys.stdout.write(self.view.getUrl()+"\n"))
         m_vbox.addWidget(m_button)
-        
+
         m_vbox.addWidget(self.view)
-    
-        self.setLayout(m_vbox)
+
+        m_vbox2 = QVBoxLayout()
+        m_button = QPushButton("Change Url")
+        m_button.clicked.connect(lambda:self.view2.loadUrl(r"http://editor.l0v0.com/"))
+        m_vbox2.addWidget(m_button)
+
+        m_button = QPushButton("Change Url2")
+        m_button.clicked.connect(lambda:self.view2.loadUrl(r"http://www.bing.com/"))
+        m_vbox2.addWidget(m_button)
+        
+        m_button = QPushButton("Reload Url")
+        m_button.clicked.connect(lambda:self.view2.reload())
+        m_vbox2.addWidget(m_button)
+
+        m_button = QPushButton("backNavigate Url")
+        m_button.clicked.connect(lambda:self.view2.goBack())
+        m_vbox2.addWidget(m_button)
+
+        m_button = QPushButton("forwardNavigate Url")
+        m_button.clicked.connect(lambda:self.view2.goForward())
+        m_vbox2.addWidget(m_button)
+        
+        m_button = QPushButton("get Url")
+        m_button.clicked.connect(lambda:sys.stdout.write(self.view2.getUrl()+"\n"))
+        m_vbox2.addWidget(m_button)
+        
+        m_vbox2.addWidget(self.view2)
+
+        container = QWidget()
+        container2 = QWidget()
+        container.setLayout(m_vbox)
+        container2.setLayout(m_vbox2)
+
+        layout = QHBoxLayout()
+        layout.addWidget(container)
+        layout.addWidget(container2)
+        self.setLayout(layout)
+
 
 def main():
     app = QApplication(sys.argv)
