@@ -26,6 +26,7 @@ if platform.system() == "Windows":
 elif platform.system() == "Darwin":
     EXE_EXT = ".app"
 
+DIR = os.path.dirname(__file__)
 
 def main():
     # Platforms supported
@@ -50,7 +51,7 @@ def main():
     env = os.environ
     if "--debug" in sys.argv:
         env["CEFPYTHON_PYINSTALLER_DEBUG"] = "1"
-    sub = Popen(["pyinstaller", "--clean", os.path.join(curdir,"pyinstaller.spec")], env=env)
+    sub = Popen(["pyinstaller", "--clean", os.path.join(curdir,"pyinstaller.spec")], env=env,cwd=DIR)
     sub.communicate()
     rcode = sub.returncode
     if rcode != 0:

@@ -5,22 +5,12 @@ __email__ =  '820472580@qq.com'
 __date__ = '2020-03-13 10:27:56'
 
 """
-
+CEF remote
 """
 
 import sys
 import time
 import platform
-
-# import sys
-# MODULE = r"F:\Anaconda2\Lib\site-packages"
-# if MODULE not in sys.path:
-#     sys.path.append(MODULE)
-# MODULE = r"F:\Anaconda2\Lib"
-# if MODULE not in sys.path:
-#     sys.path.append(MODULE)
-
-
 
 import rpyc
 from cefpython3 import cefpython as cef
