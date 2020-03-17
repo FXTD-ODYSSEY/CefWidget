@@ -35,6 +35,8 @@ python pyinstaller.py
 
 > Don't forget that `embed` function need to run after all the UI layout have been set. otherwise it would error.
 > And I add a decorator `autoCefEmbed` which can recusive find all the CefBrowser and call embed method, you can add the decorator to your main window launch method. 
+> By default, the socket run on the 4789 Port, you can modify it 
+
 
 # downside
 
