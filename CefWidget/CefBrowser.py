@@ -12,17 +12,21 @@ CefWidget Embeded browser to any software
 import os
 import sys
 import time
+import uuid
 import ctypes
+import socket
 import platform
 import subprocess
+from functools import wraps
 
 DIR = os.path.dirname(__file__)
 
-MODULE = os.path.join(DIR,"_vendor")
-if MODULE not in sys.path and os.path.exists(MODULE):
-    sys.path.insert(0,MODULE)
-
-import rpyc
+try:
+    import Qt
+except ImportError:
+    MODULE = os.path.join(DIR,"_vendor")
+    if MODULE not in sys.path and os.path.exists(MODULE):
+        sys.path.append(MODULE)
 
 from Qt.QtGui import *
 from Qt.QtCore import *
@@ -41,71 +45,76 @@ WINDOWS = (platform.system() == "Windows")
 LINUX = (platform.system() == "Linux")
 MAC = (platform.system() == "Darwin")
 
+PORT = 4789
+
 class CefBrowser(QWidget):
-    def __init__(self, parent = None , port=4437):
+    def __init__(self, parent = None):
         super(CefBrowser, self).__init__(parent)
-        self.port = port
         self.embeded = False
         self.hidden_window = None  # Required for PyQt5 on Linux
+        self.resize_flag = False  # Required for PyQt5 on Linux
+        self.port = None  # Required for PyQt5 on Linux
+    
+    def connect(self,data,recv=False):
+        ret = None
+        sock = socket.socket()
+        sock.connect((socket.gethostname(), self.port))
+        sock.send(data)
+
+        if recv:
+            ret = sock.recv(1024)
+
+        sock.close()
+        del sock
+
+        return ret
 
     def embed(self,port=None,url=""):
         self.embeded = True
-        port = int(port) if port else self.port
-
+        self.port = int(port) if port else PORT
         if (PYSIDE2 or PYQT5) and LINUX:
             # noinspection PyUnresolvedReferences
             self.hidden_window = QWindow()
 
-        cef = os.path.join(DIR,"cefapp")
-        # NOTE 开启 rpyc 服务
-        server = os.path.join(cef,"server.exe")
-        self.sever_process = subprocess.Popen('"%s" %s %s' % (server,port,url),shell=True)
-
-        try:
-            self.conn = rpyc.connect('localhost',port)  
-        except:
-            # NOTE 端口占用情况 递增测试 10 次 终止
-            if port - self.port < 10:
-                self.embed(port=port+1,url=url)
-            return
-
         # NOTE 开启 cef 浏览器
         winId = int(self.getHandle())
-        cefapp = os.path.join(cef,"cefapp.exe")
-        self.browser_process = subprocess.Popen('"%s" %s %s %s' % (cefapp,winId,port,url),shell=True)
+        self.browser_uuid = uuid.uuid4()
+        url = url if url else "https://github.com/FXTD-ODYSSEY/CefWidget"
+        self.connect("createBrowser;%s;%s;%s" % (winId,url,self.browser_uuid))
         self.window().installEventFilter(self)
 
     def eventFilter(self,receiver,event):
         # NOTE 71 为 childRemvoe
         if QCloseEvent == type(event) or event.type() == 71:
             # NOTE 彻底关闭所有服务
-            self.conn.root.stop()  
-            self.sever_process.terminate()
-            self.browser_process.terminate()
+            try:
+                self.connect("stop;%s" % self.browser_uuid)
+            except:
+                pass
             self.deleteLater()
         return False
 
     def loadUrl(self,url):
-        self.conn.root.onLoadUrl(url)  
+        self.connect("loadUrl;%s;%s" % (self.browser_uuid,url))
 
     def getUrl(self):
-        return self.conn.root.getUrl()  
+        return self.connect("getUrl;%s" % self.browser_uuid,recv=True)
 
     def reload(self):
-        return self.conn.root.onReloadCall()  
+        self.connect("reload;%s" % self.browser_uuid)
 
     def focusIn(self):
         self.setFocus()
-        return self.conn.root.onFocusInCall()  
+        self.connect("focusIn;%s" % self.browser_uuid)
 
     def focusOut(self):
-        return self.conn.root.onFocusOutCall()  
+        self.connect("focusOut;%s" % self.browser_uuid)
 
-    def backNavigate(self):
-        return self.conn.root.onBackCall()  
+    def goBack(self):
+        self.connect("goBack;%s" % self.browser_uuid)
 
-    def forwardNavigate(self):
-        return self.conn.root.onForwardCall()  
+    def goForward(self):
+        self.connect("goForward;%s" % self.browser_uuid)
 
     def getHandle(self):
         if self.hidden_window:
@@ -135,10 +144,62 @@ class CefBrowser(QWidget):
                         self.winId(), None)
 
     def moveEvent(self, event):
-        if hasattr(self,"conn"):
-            self.conn.root.onResizeCall(self.width(),self.height())  
+        if self.resize_flag:
+            self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
 
     def resizeEvent(self, event):
-        if hasattr(self,"conn"):
+        if self.resize_flag:
             size = event.size()
-            self.conn.root.onResizeCall(size.width(),size.height())  
+            self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
+
+
+def autoCefEmbed(port=None,url="",cefHandler=None):
+    port = port if port else PORT
+    def argparse(func):
+        @wraps(func)
+        def wrapper(self,*args,**kwargs):
+
+            ret = func(self,*args,**kwargs)
+
+            remote = os.path.join(DIR,"remote.py")
+            
+            # NOTE 必须要显示出来，否则嵌入操作会出错
+            visible = self.isVisible()
+            if not visible:
+                self.show()
+
+            remote = os.path.join(DIR,"cefapp","cefapp.exe")
+            server = subprocess.Popen([remote,str(port)],shell=True)
+            # NOTE 自动嵌入 cef 
+            cef_list = findAllCefBrowser(self)
+            for cef in cef_list:
+                check = None
+                if callable(cefHandler):
+                    check = cefHandler(cef,port,url)
+                if check is None and not cef.embeded:
+                    cef.embed(port,url)
+                    # NOTE 启用 resize 事件触发 
+                    cef.resize_flag = True
+
+            if not visible:
+                self.hide()
+
+            return ret
+        return wrapper
+    return argparse
+
+
+def findAllCefBrowser(parent,cef_list=[]):
+    """findAllCefBrowser 
+    Recursive find the CefBrowser
+    """
+
+    if not hasattr(parent,"children"):
+        return
+    
+    for child in parent.children():
+        if type(child) == CefBrowser:
+            cef_list.append(child)
+        findAllCefBrowser(child,cef_list)
+
+    return cef_list

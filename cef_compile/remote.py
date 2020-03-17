@@ -5,108 +5,124 @@ __email__ =  '820472580@qq.com'
 __date__ = '2020-03-13 10:27:56'
 
 """
-CEF remote
-"""
 
+"""
+import os
 import sys
 import time
+import socket
 import platform
 
-import rpyc
 from cefpython3 import cefpython as cef
 
 WINDOWS = (platform.system() == "Windows")
 LINUX = (platform.system() == "Linux")
 MAC = (platform.system() == "Darwin")
 
-def createBrowser():
 
-    WindowUtils = cef.WindowUtils()
-
-    winId = int(sys.argv[1])
-    windowInfo = cef.WindowInfo()
-    windowInfo.SetAsChild(winId)
-
-
-    settings = {}
-    settings["context_menu"] = {
-        "enabled": False,
-        "navigation": False,  # Back, Forward, Reload
-        "print": False,
-        "view_source": False,
-        "external_browser": False,  # Open in external browser
-        "devtools": False,  # Developer Tools
-    }
-    cef.Initialize(settings)
-    
-    url = sys.argv[3] if len(sys.argv) > 3 else "https://github.com/FXTD-ODYSSEY/CefWidget"
-    browser_settings = {
-        "universal_access_from_file_urls_allowed":True,
-        "file_access_from_file_urls_allowed":True,
-    }
-    browser = cef.CreateBrowserSync(windowInfo,browser_settings,url=url)
-
-    port = int(sys.argv[2])
-    conn = None
-    link_time = time.time()
-    while True:
+class RemoteBrowser(object):
+    def __init__(self):
+        # NOTE socket 创建
+        self.s = socket.socket()
+        self.s.setblocking(0)
+        self.host = socket.gethostname() 
+        self.port= int(sys.argv[1])
+        self.s.bind((self.host, self.port))   
+        self.s.listen(2)
         
-        cef.MessageLoopWork()
+        # NOTE Initialize CEF
+        cef.Initialize({
+            "context_menu":{
+                "enabled": False,
+                "navigation": True,  # Back, Forward, Reload
+                "print": False,
+                "view_source": False,
+                "external_browser": False,  # Open in external browser
+                "devtools": False,  # Developer Tools
+            }
+        })
+        self.browser_settings = {
+            "universal_access_from_file_urls_allowed":True,
+            "file_access_from_file_urls_allowed":True,
+        }
 
-        # NOTE 用于保持 rpyc 的连接
-        if time.time() - link_time < .5:continue
-        link_time = time.time()
 
-        if conn:
-            try:
-                url = conn.root.loadUrl()
-                size = conn.root.resizeCall()
-            except:
-                # NOTE 说明 rpyc 关闭 | 跳出循环
-                break
+        # NOTE 循环变量初始化
+        self.browser_dict = {}
 
-            if url and url != browser.GetUrl():
-                browser.LoadUrl(url)
-            elif conn.root.reloadCall():
-                browser.Reload()
+        self.callback_dict = {
+            'loadUrl':lambda browser,winId,url: browser.LoadUrl(url) if browser and browser.GetUrl() != url else None ,
+            'getUrl':lambda browser,winId: browser.GetUrl() if browser else None ,
+            'goBack':lambda browser,winId: browser.GoBack() if browser and browser.CanGoBack() else None ,
+            'goForward':lambda browser,winId: browser.GoForward() if browser and browser.CanGoForward() else None ,
+            'reload':lambda browser,winId: browser.Reload() if browser else None ,
+            'focusOut':lambda browser,winId: browser.SetFocus(False) if browser else None ,
+            'focusIn':self.focusIn ,
+            'resize':self.resize ,
+        }
 
-            elif conn.root.backCall() and browser.CanGoBack():
-                browser.GoBack()
-                conn.root.updateUrl(browser.GetUrl())
+    def focusIn(self,browser,winId):
+        if not browser:
+            return 
+        browser.SetFocus(True)
+        if WINDOWS:
+            cef.WindowUtils.OnSetFocus(winId, 0, 0, 0)
 
-            elif conn.root.forwardCall() and browser.CanGoForward():
-                browser.GoForward()
-                conn.root.updateUrl(browser.GetUrl())
+    def resize(self,browser,winId,width,height):
+        if WINDOWS:
+            cef.WindowUtils.OnSize(winId, 0, 0, 0)
+        elif LINUX:
+            browser.SetBounds(0, 0, float(width), float(height))
+        browser.NotifyMoveOrResizeStarted()
 
-            elif conn.root.focusInCall():
-                browser.SetFocus(True)
-                if WINDOWS:
-                    WindowUtils.OnSetFocus(winId, 0, 0, 0)
-            elif conn.root.focusOutCall():
-                browser.SetFocus(False)
-                
-            elif size:
-                width,height = size
-                if WINDOWS:
-                    WindowUtils.OnSize(winId, 0, 0, 0)
-                elif LINUX:
-                    browser.SetBounds(0, 0, width, height)
-                browser.NotifyMoveOrResizeStarted()
-        else:
-            try:
-                conn = rpyc.connect('localhost',port)
-            except:
-                pass
+    def start(self):
+        ret = None
+        self.update_time = time.time()
+        self.connect_time = time.time()
+        while True:
+            # NOTE 刷新延迟 官方建议要有 10ms
+            if time.time() - self.update_time < .01:continue
+            self.update_time = time.time()
+
+            cef.MessageLoopWork()
             
-    cef.Shutdown()
+            # if time.time() - self.connect_time < .1:continue
+            # self.connect_time = time.time()
 
+            try:
+                client,addr = self.s.accept()     
+            except:
+                continue
 
+            data = client.recv(1024)
+        
+            # NOTE change to specfic type
+            arg_list = [arg for arg in data.split(";")]
+            args = self.browser_dict.get(arg_list[1])
+            func_name = arg_list[0]
+            if func_name == "stop":
+                break
+            elif func_name == "createBrowser" and not args:
+                url = arg_list[2]
+                winId = int(arg_list[1])
+                # NOTE 创建浏览器
+                UUID = arg_list[3]
+                windowInfo = cef.WindowInfo()
+                windowInfo.SetAsChild(winId)
+                browser = cef.CreateBrowserSync(windowInfo,self.browser_settings,url=url)
+                self.browser_dict[UUID] = (browser,winId)
+            elif func_name in self.callback_dict and args:
+                browser,winId = args
+                ret = self.callback_dict[func_name](browser,winId,*arg_list[2:])
+            else:
+                continue
+
+            client.send(str(ret))
+        
+        client.close() 
+        self.s.close()
+        cef.Shutdown()
 
 if __name__ == "__main__":
-
-    createBrowser()
-
-    
-
-
-    
+    remote = RemoteBrowser()
+    remote.start()

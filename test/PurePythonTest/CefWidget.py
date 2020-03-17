@@ -163,7 +163,7 @@ def autoCefEmbed(port=None,url="",cefHandler=None):
 
             remote = os.path.join(DIR,"remote.py")
             
-            # NOTE 必须要显示出来，否则嵌入操作可能会出错
+            # NOTE 必须要显示出来，否则嵌入操作会出错
             visible = self.isVisible()
             if not visible:
                 self.show()
