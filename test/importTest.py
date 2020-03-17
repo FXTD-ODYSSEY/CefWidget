@@ -88,9 +88,16 @@ class TestWidget(QWidget):
 
 
 def main():
-    # app = QApplication(sys.argv)
+    app_flag = True
+    try:
+        app = QApplication(sys.argv)
+    except:
+        app_flag = False
+        
     ex = TestWidget()
     ex.show()
-    # sys.exit(app.exec_())
+
+    if app_flag:
+        sys.exit(app.exec_())
     
 main()
