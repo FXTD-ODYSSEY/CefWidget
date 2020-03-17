@@ -44,7 +44,7 @@ WINDOWS = (platform.system() == "Windows")
 LINUX = (platform.system() == "Linux")
 MAC = (platform.system() == "Darwin")
 
-PORT = 4435
+PORT = 4789
 
 class CefBrowser(QWidget):
     def __init__(self, parent = None):
@@ -54,14 +54,17 @@ class CefBrowser(QWidget):
         self.port = None  # Required for PyQt5 on Linux
     
     def connect(self,data):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) #在客户端开启心跳维护
+        # sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) #在客户端开启心跳维护
+        sock = socket.socket()
+        # sock.setblocking(0)
         sock.connect((socket.gethostname(), self.port))
         sock.send(data)
-        # ret = sock.recv(1024)
+        ret = sock.recv(1024)
         print "connect"
-        # sock.close()
-        # return ret
+        sock.close()
+        del sock
+        return ret
 
     def embed(self,port=None,url=""):
         self.embeded = True
@@ -69,6 +72,7 @@ class CefBrowser(QWidget):
         if (PYSIDE2 or PYQT5) and LINUX:
             # noinspection PyUnresolvedReferences
             self.hidden_window = QWindow()
+
 
         # NOTE 开启 cef 浏览器
         winId = int(self.getHandle())
@@ -81,31 +85,31 @@ class CefBrowser(QWidget):
         # NOTE 71 为 childRemvoe
         if QCloseEvent == type(event) or event.type() == 71:
             # NOTE 彻底关闭所有服务
-            self.sock.send("stop")
+            self.connect("stop;%s" % self.browser_uuid)
             self.deleteLater()
         return False
 
     def loadUrl(self,url):
-        return self.sock.send("loadUrl;%s;%s" % (self.browser_uuid,url))
+        self.connect("loadUrl;%s;%s" % (self.browser_uuid,url))
 
     def getUrl(self):
-        return self.sock.send("getUrl;%s" % self.browser_uuid)
+        self.connect("getUrl;%s" % self.browser_uuid)
 
     def reload(self):
-        return self.sock.send("reload;%s" % self.browser_uuid)
+        self.connect("reload;%s" % self.browser_uuid)
 
     def focusIn(self):
         self.setFocus()
-        return self.sock.send("focusIn;%s" % self.browser_uuid)
+        self.connect("focusIn;%s" % self.browser_uuid)
 
     def focusOut(self):
-        return self.sock.send("focusOut;%s" % self.browser_uuid)
+        self.connect("focusOut;%s" % self.browser_uuid)
 
     def goBack(self):
-        return self.sock.send("goBack;%s" % self.browser_uuid)
+        self.connect("goBack;%s" % self.browser_uuid)
 
     def goForward(self):
-        return self.sock.send("goForward;%s" % self.browser_uuid)
+        self.connect("goForward;%s" % self.browser_uuid)
 
     def getHandle(self):
         if self.hidden_window:
@@ -134,12 +138,12 @@ class CefBrowser(QWidget):
                 return ctypes.pythonapi.PyCapsule_GetPointer(
                         self.winId(), None)
 
-    # def moveEvent(self, event):
-    #     self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
+    def moveEvent(self, event):
+        self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
 
-    # def resizeEvent(self, event):
-    #     size = event.size()
-    #     self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
+    def resizeEvent(self, event):
+        size = event.size()
+        self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
 
 
 def autoCefEmbed(port=None,url="",cefHandler=None):
@@ -152,8 +156,7 @@ def autoCefEmbed(port=None,url="",cefHandler=None):
 
             remote = os.path.join(DIR,"remote.py")
             
-            server = subprocess.Popen('"%s" "%s" %s ' % (sys.executable,remote,port),shell=True)
-
+            server = subprocess.Popen([sys.executable,remote,str(port)],shell=True)
             print server
             # NOTE 自动嵌入 cef 
             for cef in findAllCefBrowser(self):
@@ -225,6 +228,7 @@ def main():
     app = QApplication(sys.argv)
     ex = TestWidget()
     ex.show()
+
     sys.exit(app.exec_())
     
 if __name__ == '__main__':

@@ -33,7 +33,7 @@ class RemoteBrowser(object):
     def __init__(self):
         # NOTE socket 创建
         self.s = socket.socket()
-        # self.s.setblocking(0)
+        self.s.setblocking(0)
         self.host = socket.gethostname() 
         self.port= int(sys.argv[1])
         self.s.bind((self.host, self.port))   
@@ -88,13 +88,14 @@ class RemoteBrowser(object):
         # NOTE 创建浏览器
         UUID = str(uuid.uuid4())
         windowInfo = cef.WindowInfo()
-        windowInfo.SetAsChild(winId)
+        # windowInfo.SetAsChild(winId)
         browser = cef.CreateBrowserSync(windowInfo,self.browser_settings,url=url)
-        # browser = cef.CreateBrowserSync(windowInfo,url=url)
         self.browser_dict[UUID] = (browser,winId)
         return UUID 
 
     def start(self):
+        num = 0
+        ret = None
         self.update_time = time.time()
         self.connect_time = time.time()
         while True:
@@ -106,6 +107,9 @@ class RemoteBrowser(object):
             
             if time.time() - self.connect_time < .5:continue
             self.connect_time = time.time()
+
+            num +=1
+            print num
 
             try:
                 client,addr = self.s.accept()     
@@ -120,23 +124,27 @@ class RemoteBrowser(object):
             args = self.browser_dict.get(arg_list[1])
             func_name = arg_list[0]
             if func_name == "stop":
-                client.close()    
+                # client.close()    
                 break
             elif func_name == "createBrowser" and not args:
                 url = arg_list[2]
                 winId = int(arg_list[1])
-                print url,winId
-                ret = self.createBrowser(winId,url)
+                # NOTE 创建浏览器
+                UUID = str(uuid.uuid4())
+                windowInfo = cef.WindowInfo()
+                # windowInfo.SetAsChild(winId)
+                browser = cef.CreateBrowserSync(windowInfo,self.browser_settings,url=url)
+                self.browser_dict[UUID] = (browser,winId)
+                ret = UUID
             elif func_name in self.callback_dict and args:
                 browser,winId = args
                 ret = self.callback_dict[func_name](browser,winId,*arg_list[2:])
             else:
-                client.close()    
+                # client.close()    
                 continue
 
-            if ret:
-                client.send(str(ret))
-            client.close()    
+            client.send(str(ret))
+            # client.close()    
         
         client.close() 
         self.s.close()
