@@ -18,13 +18,9 @@ import subprocess
 
 DIR = os.path.dirname(__file__)
 
-try:
-    import Qt
-    import rpyc
-except ImportError:
-    MODULE = os.path.join(DIR,"_vendor")
-    if MODULE not in sys.path and os.path.exists(MODULE):
-        sys.path.append(MODULE)
+MODULE = os.path.join(DIR,"_vendor")
+if MODULE not in sys.path and os.path.exists(MODULE):
+    sys.path.insert(0,MODULE)
 
 import rpyc
 
@@ -49,19 +45,21 @@ class CefBrowser(QWidget):
     def __init__(self, parent = None , port=4437):
         super(CefBrowser, self).__init__(parent)
         self.port = port
-
+        self.embeded = False
         self.hidden_window = None  # Required for PyQt5 on Linux
 
     def embed(self,port=None,url=""):
+        self.embeded = True
         port = int(port) if port else self.port
 
         if (PYSIDE2 or PYQT5) and LINUX:
             # noinspection PyUnresolvedReferences
             self.hidden_window = QWindow()
 
+        cef = os.path.join(DIR,"cefapp")
         # NOTE 开启 rpyc 服务
-        server = os.path.join(DIR,"server.py")
-        self.sever_process = subprocess.Popen('"%s" "%s" %s %s' % (sys.executable,server,port,url),shell=True)
+        server = os.path.join(cef,"server.exe")
+        self.sever_process = subprocess.Popen('"%s" %s %s' % (server,port,url),shell=True)
 
         try:
             self.conn = rpyc.connect('localhost',port)  
@@ -73,8 +71,8 @@ class CefBrowser(QWidget):
 
         # NOTE 开启 cef 浏览器
         winId = int(self.getHandle())
-        cefapp = os.path.join(DIR,"remote.py")
-        self.browser_process = subprocess.Popen('"%s" "%s" %s %s %s' % (sys.executable,cefapp,winId,port,url),shell=True)
+        cefapp = os.path.join(cef,"cefapp.exe")
+        self.browser_process = subprocess.Popen('"%s" %s %s %s' % (cefapp,winId,port,url),shell=True)
         self.window().installEventFilter(self)
 
     def eventFilter(self,receiver,event):
