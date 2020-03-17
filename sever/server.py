@@ -5,7 +5,7 @@ __email__ =  '820472580@qq.com'
 __date__ = '2020-03-14 23:54:08'
 
 """
-
+CEF rpyc server 
 """
 import os
 import sys
@@ -16,8 +16,6 @@ import platform
 import rpyc
 from rpyc import Service  
 from rpyc.utils.server import ThreadedServer  
-
-print sys.argv
 
 class CefService(Service):  
 
