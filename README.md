@@ -45,6 +45,14 @@ python pyinstaller.py
 > By default, the socket run on the 4789 Port, you can modify it 
 
 
+# release
+
+> you can change to the release branch , I clear all the irrelevant folder.
+> then you can download the zip file on the github release and then unzip the cefapp.rar into the `CefWidget` folder
+
+> how to implement the CefWidget Moudle , you can check with the test folder `importTest.py` on the master branch
+
+
 # downside
 
 > Cef Framework is very large and it doesn't support lots of the video format like h.264 by default (because of the license problems)
