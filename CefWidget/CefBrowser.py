@@ -161,8 +161,6 @@ def autoCefEmbed(port=None,url="",cefHandler=None):
 
             ret = func(self,*args,**kwargs)
 
-            remote = os.path.join(DIR,"remote.py")
-            
             # NOTE 必须要显示出来，否则嵌入操作会出错
             visible = self.isVisible()
             if not visible:
@@ -170,6 +168,10 @@ def autoCefEmbed(port=None,url="",cefHandler=None):
 
             remote = os.path.join(DIR,"cefapp","cefapp.exe")
             server = subprocess.Popen([remote,str(port)],shell=True)
+
+            # NOTE 等待 server 开启
+            time.sleep(0.5)
+
             # NOTE 自动嵌入 cef 
             cef_list = findAllCefBrowser(self)
             for cef in cef_list:
