@@ -13,20 +13,19 @@ import os
 import sys
 import time
 import ctypes
+import socket
 import platform
 import subprocess
+from functools import wraps
 
 DIR = os.path.dirname(__file__)
 
 try:
     import Qt
-    import rpyc
 except ImportError:
     MODULE = os.path.join(DIR,"_vendor")
     if MODULE not in sys.path and os.path.exists(MODULE):
         sys.path.append(MODULE)
-
-import rpyc
 
 from Qt.QtGui import *
 from Qt.QtCore import *
@@ -45,69 +44,68 @@ WINDOWS = (platform.system() == "Windows")
 LINUX = (platform.system() == "Linux")
 MAC = (platform.system() == "Darwin")
 
-class CefBrowser(QWidget):
-    def __init__(self, parent = None , port=4437):
-        super(CefBrowser, self).__init__(parent)
-        self.port = port
+PORT = 4435
 
+class CefBrowser(QWidget):
+    def __init__(self, parent = None):
+        super(CefBrowser, self).__init__(parent)
+        self.embeded = False
         self.hidden_window = None  # Required for PyQt5 on Linux
+        self.port = None  # Required for PyQt5 on Linux
+    
+    def connect(self,data):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) #在客户端开启心跳维护
+        sock.connect((socket.gethostname(), self.port))
+        sock.send(data)
+        # ret = sock.recv(1024)
+        print "connect"
+        # sock.close()
+        # return ret
 
     def embed(self,port=None,url=""):
-        port = int(port) if port else self.port
-
+        self.embeded = True
+        self.port = int(port) if port else PORT
         if (PYSIDE2 or PYQT5) and LINUX:
             # noinspection PyUnresolvedReferences
             self.hidden_window = QWindow()
 
-        # NOTE 开启 rpyc 服务
-        server = os.path.join(DIR,"server.py")
-        self.sever_process = subprocess.Popen('"%s" "%s" %s %s' % (sys.executable,server,port,url),shell=True)
-
-        try:
-            self.conn = rpyc.connect('localhost',port)  
-        except:
-            # NOTE 端口占用情况 递增测试 10 次 终止
-            if port - self.port < 10:
-                self.embed(port=port+1,url=url)
-            return
-
         # NOTE 开启 cef 浏览器
         winId = int(self.getHandle())
-        cefapp = os.path.join(DIR,"remote.py")
-        self.browser_process = subprocess.Popen('"%s" "%s" %s %s %s' % (sys.executable,cefapp,winId,port,url),shell=True)
+        url = url if url else "https://github.com/FXTD-ODYSSEY/CefWidget"
+        self.browser_uuid = self.connect("createBrowser;%s;%s" % (winId,url))
+        print "browser_uuid",self.browser_uuid
         self.window().installEventFilter(self)
 
     def eventFilter(self,receiver,event):
         # NOTE 71 为 childRemvoe
         if QCloseEvent == type(event) or event.type() == 71:
             # NOTE 彻底关闭所有服务
-            self.conn.root.stop()  
-            self.sever_process.terminate()
-            self.browser_process.terminate()
+            self.sock.send("stop")
             self.deleteLater()
         return False
 
     def loadUrl(self,url):
-        self.conn.root.onLoadUrl(url)  
+        return self.sock.send("loadUrl;%s;%s" % (self.browser_uuid,url))
 
     def getUrl(self):
-        return self.conn.root.getUrl()  
+        return self.sock.send("getUrl;%s" % self.browser_uuid)
 
     def reload(self):
-        return self.conn.root.onReloadCall()  
+        return self.sock.send("reload;%s" % self.browser_uuid)
 
     def focusIn(self):
         self.setFocus()
-        return self.conn.root.onFocusInCall()  
+        return self.sock.send("focusIn;%s" % self.browser_uuid)
 
     def focusOut(self):
-        return self.conn.root.onFocusOutCall()  
+        return self.sock.send("focusOut;%s" % self.browser_uuid)
 
-    def backNavigate(self):
-        return self.conn.root.onBackCall()  
+    def goBack(self):
+        return self.sock.send("goBack;%s" % self.browser_uuid)
 
-    def forwardNavigate(self):
-        return self.conn.root.onForwardCall()  
+    def goForward(self):
+        return self.sock.send("goForward;%s" % self.browser_uuid)
 
     def getHandle(self):
         if self.hidden_window:
@@ -136,17 +134,58 @@ class CefBrowser(QWidget):
                 return ctypes.pythonapi.PyCapsule_GetPointer(
                         self.winId(), None)
 
-    def moveEvent(self, event):
-        if hasattr(self,"conn"):
-            self.conn.root.onResizeCall(self.width(),self.height())  
+    # def moveEvent(self, event):
+    #     self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
 
-    def resizeEvent(self, event):
-        if hasattr(self,"conn"):
-            size = event.size()
-            self.conn.root.onResizeCall(size.width(),size.height())  
+    # def resizeEvent(self, event):
+    #     size = event.size()
+    #     self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
 
+
+def autoCefEmbed(port=None,url="",cefHandler=None):
+    port = port if port else PORT
+    def argparse(func):
+        @wraps(func)
+        def wrapper(self,*args,**kwargs):
+
+            ret = func(self,*args,**kwargs)
+
+            remote = os.path.join(DIR,"remote.py")
+            
+            server = subprocess.Popen('"%s" "%s" %s ' % (sys.executable,remote,port),shell=True)
+
+            print server
+            # NOTE 自动嵌入 cef 
+            for cef in findAllCefBrowser(self):
+                check = None
+                if callable(cefHandler):
+                    check = cefHandler(cef,port,url)
+                if check is None and not cef.embeded:
+                    cef.embed(port,url)
+
+            return ret
+        return wrapper
+    return argparse
+
+
+def findAllCefBrowser(parent,cef_list=[]):
+    """findAllCefBrowser 
+    Recursive find the CefBrowser
+    """
+
+    if not hasattr(parent,"children"):
+        return
+    
+    for child in parent.children():
+        if type(child) == CefBrowser:
+            cef_list.append(child)
+        findAllCefBrowser(child,cef_list)
+
+    return cef_list
 
 class TestWidget(QWidget):
+
+    @autoCefEmbed(url="https://www.baidu.com/")
     def __init__(self, parent = None):
         super(TestWidget, self).__init__(parent)
         self.setGeometry(150,150, 800, 800)
@@ -167,11 +206,11 @@ class TestWidget(QWidget):
         m_vbox.addWidget(m_button)
 
         m_button = QPushButton("backNavigate Url")
-        m_button.clicked.connect(lambda:self.view.backNavigate())
+        m_button.clicked.connect(lambda:self.view.goBack())
         m_vbox.addWidget(m_button)
 
         m_button = QPushButton("forwardNavigate Url")
-        m_button.clicked.connect(lambda:self.view.forwardNavigate())
+        m_button.clicked.connect(lambda:self.view.goForward())
         m_vbox.addWidget(m_button)
         
         m_button = QPushButton("get Url")
@@ -181,8 +220,6 @@ class TestWidget(QWidget):
         m_vbox.addWidget(self.view)
     
         self.setLayout(m_vbox)
-
-        self.view.embed()
 
 def main():
     app = QApplication(sys.argv)

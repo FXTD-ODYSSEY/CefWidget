@@ -75,7 +75,7 @@ def createBrowser():
                 conn.root.updateUrl(browser.GetUrl())
 
             elif conn.root.forwardCall() and browser.CanGoForward():
-                browser.onForward()
+                browser.GoForward()
                 conn.root.updateUrl(browser.GetUrl())
 
             elif conn.root.focusInCall():
