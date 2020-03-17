@@ -40,7 +40,11 @@ def createBrowser():
     cef.Initialize(settings)
     
     url = sys.argv[3] if len(sys.argv) > 3 else "https://github.com/FXTD-ODYSSEY/CefWidget"
-    browser = cef.CreateBrowserSync(windowInfo,url=url)
+    browser_settings = {
+        "universal_access_from_file_urls_allowed":True,
+        "file_access_from_file_urls_allowed":True,
+    }
+    browser = cef.CreateBrowserSync(windowInfo,browser_settings,url=url)
 
     port = int(sys.argv[2])
     conn = None
