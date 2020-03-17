@@ -3,6 +3,13 @@ CefPython Embed to the python Qt Framework software
 
 [中文说明](https://blog.l0v0.com/posts/d2b44b01.html)
 
+![maya](img/maya.gif)
+
+![houdini](img/houdini.gif)
+
+![python](img/python.gif)
+
+
 # Usage
 
 > Cef is Chromium Embed Framework, And I want to use it for multiplatform WebGL displaying.
