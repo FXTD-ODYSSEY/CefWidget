@@ -5,10 +5,16 @@ if MODULE not in sys.path:
     sys.path.append(MODULE)
 
 import CefWidget
-reload(CefBrowser)
+reload(CefWidget)
 from CefWidget import CefBrowser
+from CefWidget import autoCefEmbed
+from Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
 
 class TestWidget(QWidget):
+
+    @autoCefEmbed
     def __init__(self, parent = None):
         super(TestWidget, self).__init__(parent)
         self.setGeometry(150,150, 800, 800)
@@ -44,13 +50,12 @@ class TestWidget(QWidget):
     
         self.setLayout(m_vbox)
 
-        self.view.embed()
+        # self.view.embed()
 
 def main():
-    app = QApplication(sys.argv)
+    # app = QApplication(sys.argv)
     ex = TestWidget()
     ex.show()
-    sys.exit(app.exec_())
+    # sys.exit(app.exec_())
     
-if __name__ == '__main__':
-   main()
+main()
