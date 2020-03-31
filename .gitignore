@@ -8,3 +8,5 @@ build/
 dist/
 webrtc_event_logs/
 blob_storage/
+
+CefWidget.rar

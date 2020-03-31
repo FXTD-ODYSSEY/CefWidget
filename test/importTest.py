@@ -14,13 +14,13 @@ from Qt.QtWidgets import *
 
 class TestWidget(QWidget):
 
-    @autoCefEmbed(url="https://www.baidu.com/")
+    @autoCefEmbed()
     def __init__(self, parent = None):
         super(TestWidget, self).__init__(parent)
         self.setGeometry(150,150, 800, 800)
 
-        self.view = CefBrowser(self)
-        self.view2 = CefBrowser(self)
+        self.view = CefBrowser(self,url="https://www.baidu.com/")
+        self.view2 = CefBrowser(self,url="https://www.bing.com/")
         
         m_vbox = QVBoxLayout()
         m_button = QPushButton("Change Url")

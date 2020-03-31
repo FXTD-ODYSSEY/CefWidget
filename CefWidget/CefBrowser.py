@@ -48,12 +48,13 @@ MAC = (platform.system() == "Darwin")
 PORT = 4789
 
 class CefBrowser(QWidget):
-    def __init__(self, parent = None):
+    def __init__(self, parent = None , url=""):
         super(CefBrowser, self).__init__(parent)
         self.embeded = False
         self.hidden_window = None  # Required for PyQt5 on Linux
-        self.resize_flag = False  # Required for PyQt5 on Linux
-        self.port = None  # Required for PyQt5 on Linux
+        self.resize_flag = False  
+        self.port = None  
+        self.url = url  
     
     def connect(self,data,recv=False):
         ret = None
@@ -69,7 +70,7 @@ class CefBrowser(QWidget):
 
         return ret
 
-    def embed(self,port=None,url=""):
+    def embed(self,port=None):
         self.embeded = True
         self.port = int(port) if port else PORT
         if (PYSIDE2 or PYQT5) and LINUX:
@@ -79,7 +80,7 @@ class CefBrowser(QWidget):
         # NOTE 开启 cef 浏览器
         winId = int(self.getHandle())
         self.browser_uuid = uuid.uuid4()
-        url = url if url else "https://github.com/FXTD-ODYSSEY/CefWidget"
+        url = self.url if self.url else "https://github.com/FXTD-ODYSSEY/CefWidget"
         self.connect("createBrowser;%s;%s;%s" % (winId,url,self.browser_uuid))
         self.window().installEventFilter(self)
 
@@ -153,33 +154,41 @@ class CefBrowser(QWidget):
             self.connect("resize;%s;%s;%s" % (self.browser_uuid,self.width(),self.height()))
 
 
-def autoCefEmbed(port=None,url="",cefHandler=None):
+def autoCefEmbed(port=None,cefHandler=None):
     port = port if port else PORT
     def argparse(func):
         @wraps(func)
         def wrapper(self,*args,**kwargs):
 
             ret = func(self,*args,**kwargs)
+            
+            remote = os.path.join(DIR,"cefapp","cefapp.exe")
+            if not os.path.exists(remote):
+                QMessageBox.critical(self,u"error",u"cefapp folder not found \nplease download it from the github repo release\nhttps://github.com/FXTD-ODYSSEY/CefWidget/releases")
+                self.deleteLater()
+                return
+
+            # server = subprocess.Popen([remote,str(port)],shell=True)
+            remote = os.path.join(DIR,"remote.py")
+            server = subprocess.Popen([sys.executable,remote,str(port)],shell=True)
+            
 
             # NOTE 必须要显示出来，否则嵌入操作会出错
             visible = self.isVisible()
             if not visible:
                 self.show()
 
-            remote = os.path.join(DIR,"cefapp","cefapp.exe")
-            server = subprocess.Popen([remote,str(port)],shell=True)
-
-            # NOTE 等待 server 开启
-            time.sleep(0.5)
+            
+            time.sleep(1)
 
             # NOTE 自动嵌入 cef 
             cef_list = findAllCefBrowser(self)
             for cef in cef_list:
                 check = None
                 if callable(cefHandler):
-                    check = cefHandler(cef,port,url)
+                    check = cefHandler(cef,port)
                 if check is None and not cef.embeded:
-                    cef.embed(port,url)
+                    cef.embed(port)
                     # NOTE 启用 resize 事件触发 
                     cef.resize_flag = True
 
