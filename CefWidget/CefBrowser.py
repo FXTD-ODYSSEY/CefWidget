@@ -28,9 +28,9 @@ except ImportError:
     if MODULE not in sys.path and os.path.exists(MODULE):
         sys.path.append(MODULE)
 
-from Qt.QtGui import *
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from PySide.QtGui import *
+from PySide.QtCore import *
+# from Qt.QtWidgets import *
 from Qt import __binding__
 
 # from PySide.QtGui import *
@@ -45,7 +45,7 @@ WINDOWS = (platform.system() == "Windows")
 LINUX = (platform.system() == "Linux")
 MAC = (platform.system() == "Darwin")
 
-PORT = 4789
+PORT = 4788
 
 class CefBrowser(QWidget):
     def __init__(self, parent = None , url=""):
@@ -168,9 +168,9 @@ def autoCefEmbed(port=None,cefHandler=None):
                 self.deleteLater()
                 return
 
-            server = subprocess.Popen([remote,str(port)],shell=True)
-            # remote = os.path.join(DIR,"remote.py")
-            # server = subprocess.Popen([sys.executable,remote,str(port)],shell=True)
+            # server = subprocess.Popen([remote,str(port)],shell=True)
+            remote = os.path.join(DIR,"remote.py")
+            server = subprocess.Popen([sys.executable,remote,str(port)],shell=True)
             
 
             # NOTE 必须要显示出来，否则嵌入操作会出错

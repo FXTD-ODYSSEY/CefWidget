@@ -8,9 +8,9 @@ import CefWidget
 reload(CefWidget)
 from CefWidget import CefBrowser
 from CefWidget import autoCefEmbed
-from Qt.QtGui import *
-from Qt.QtCore import *
-from Qt.QtWidgets import *
+from PySide.QtGui import *
+from PySide.QtCore import *
+# from Qt.QtWidgets import *
 
 class TestWidget(QWidget):
 

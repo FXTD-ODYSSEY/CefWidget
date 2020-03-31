@@ -1,0 +1,191 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+
+<title>OpenGL|WebGL 大作业</title>
+<style>
+
+/* #webgl{position:absolute;width:100%;height:100%;z-index:-1;} */
+
+html , body {height:100%;width:100%;margin: 0px;padding: 0px;overflow: hidden}
+    
+/* #container{position:relative;} */
+    
+#logo{position:absolute;width:40%; left: 50%;top: 50%;transform: translate(-50%,-50%);}  
+    
+#main{position: fixed;bottom: 20px;right: 20px;padding: 1px 15px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;transition: transform 0.2s linear;}
+
+#main:hover {cursor: pointer;opacity: 1;transform: rotate(180deg);}
+
+#help_btn {position: fixed;bottom: 100px;right: 30px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}
+
+#full_btn {position: fixed;bottom: 150px;right: 30px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}
+
+#share_btn {position: fixed;bottom: 200px;right: 30px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}
+
+#stop_btn {position: fixed;bottom: 250px;right: 30px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}
+
+#origin_btn {position: fixed;bottom: 300px;right: 30px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}
+    
+#color_dark_btn {position: fixed;bottom: 200px;right: 80px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}
+
+#color_white_btn {position: fixed;bottom: 200px;right: 80px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}
+
+#color_white_btn_small {position: fixed;bottom: 20px;right: 20px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}
+
+#color_dark_btn_small {position: fixed;bottom: 20px;right: 45px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}
+
+#panel {padding: 0; margin: 0; width: 200px;height: 500px;background: #a0a0f0;position: absolute;right:3px;top:20%;border:2px solid #bbb}
+
+#blocker {position: absolute;width: 100%;height: 100%;background-color: rgba(0,0,0,0.5);}
+
+#instructions {width: 100%;height: 100%;display: -webkit-box;display: -moz-box;display: box;-webkit-box-orient: horizontal;-moz-box-orient: horizontal;box-orient: horizontal;-webkit-box-pack: center;-moz-box-pack: center;box-pack: center;-webkit-box-align: center;-moz-box-align: center;box-align: center;color: #ffffff;text-align: center;text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;}
+</style>
+</head>
+
+<body>
+   <!--设置webgl的id让threejs链接-->
+    <div id="webgl">
+
+        <div id="logo">
+           <div id="container"></div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/92/three.min.js"></script><!--链接threejs的库-->
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/controls/OrbitControls.js"></script><!--Orbit摄像机脚本-->
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/controls/EditorControls.js"></script><!--Editor摄像机脚本-->
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/controls/PointerLockControls.js"></script><!--第一人称脚本-->
+    
+     <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/loaders/OBJLoader.js"></script><!--加载OBJ的脚本-->
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/loaders/MTLLoader.js"></script><!--加载mtl的脚本-->
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/loaders/DDSLoader.js"></script><!--加载DDS的脚本-->
+
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/shaders/CopyShader.js"></script>
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/shaders/FXAAShader.js"></script>
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/postprocessing/EffectComposer.js"></script>
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/postprocessing/RenderPass.js"></script>
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/postprocessing/ShaderPass.js"></script>
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/threejs/postprocessing/OutlinePass.js"></script>
+    
+    
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/NEW_packed/js/picoModal.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.animation.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.min.css" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.0.1/progressbar.min.js"></script>
+   
+    <script src="https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/NEW_packed/js/SuiYuan_THREE_View-ver1.0.5.js"></script>
+    
+    <script type="text/javascript">
+        
+        var app = new SuiYuan.THREE_View();
+        
+        app.setCamera({focalLength:45});
+        app.setWebGLRenderer({antialias:true});
+//        
+        var init = app.initScene();
+        
+
+        init.scene.background = new THREE.Color(0x333333);
+        
+        //背景图片hdr
+//        var BGsphere = init.backgroundImage('texture/blur.jpg');
+//        BGsphere.scale.x = BGsphere.scale.y = BGsphere.scale.z = 20;
+        
+//        //360控制
+        var Control = init.EditorControl();
+        
+        //360控制
+//        var Control = init.OrbitControl();
+//        Control.maxDistance = Infinity;
+//        Control.panSpeed = .1;
+        
+        //第一人称
+//        init.collide_Objects.push(cube);
+//        init.PointerLockControl();
+//        init.PointerLockControl_block();
+        
+//        //外轮廓显示
+//        var pass = app.renderPass();
+//        var outline = pass.outlinePass();
+        
+        /************************/
+        var bar = app.progressBarSVG(logo,undefined,'circle');
+        
+        app.cameraFixEnabled(function(){
+            setTimeout('app.camera_check = true;',1000);
+        },function(){
+            app.camera_check = false; 
+        });
+        
+        
+        var manager = app.LoadingManagement();
+        
+        var RotateGrp = new THREE.Group();
+        
+//        var geometry = new THREE.BoxGeometry( 4, 4, 4 );
+//        var geometry = new THREE.TorusBufferGeometry( 1, 0.3, 16, 100 );
+//        var material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+//        var cube = new THREE.Mesh( geometry, material );
+//        cube.position.z = -4;
+//        init.scene.add(cube);
+        
+        var textureLoader = new THREE.TextureLoader();
+        var envPath = 'https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/NEW_packed/texture/VancouverConventionCentre/';
+        var reflectionCube = app.getEnvMap(envPath);
+        
+        
+//        var background_mat = app.getMaterial('basic','rgb(222,222,222)',THREE.FrontSide);
+//        var colorMap = textureLoader.load('model/texture/background.jpg');
+//        background_mat.map = colorMap;
+//        var backgroundObj = app.background_obj('capsule',background_mat,0);
+        
+        var path = 'https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/model/head.obj';
+        var geo_material = app.getMaterial('standard','rgb(200,200,200)');
+        var colorMap = textureLoader.load('https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/model/texture/head.jpg');
+        geo_material.matelness = 1;
+        geo_material.roughness = .95;
+        geo_material.skinning = true;
+        geo_material.map = colorMap;
+        geo_material.envMap = reflectionCube;
+        var model_source_1 = app.getModel(path,geo_material);
+
+
+        RotateGrp.add(model_source_1);
+        RotateGrp.rotation.y += 0;
+        RotateGrp.position.y -= 0;
+        RotateGrp.scale.y = RotateGrp.scale.x = RotateGrp.scale.z = .03;
+        init.scene.add(RotateGrp);
+        
+//        init.scene.background = reflectionCube;
+        
+        var light = app.initLight();
+        light.ambientLight.intensity = 1;
+        
+        app.update(function(){
+            
+            RotateGrp.rotation.y += 0.002;
+        });
+        
+        app.animate();
+        
+       /* var app = new SuiYuan.THREE_View();
+        var bar = app.progressBar(webgl);
+        bar.animate(1.0);*/
+        
+       
+    </script>
+
+
+</body>
+</html>
