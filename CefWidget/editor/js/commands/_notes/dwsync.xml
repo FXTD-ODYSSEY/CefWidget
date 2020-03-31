@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<dwsync>
+<file name="AddObjectCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="RemoveObjectCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="MoveObjectCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetPositionCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetRotationCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetScaleCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetValueCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetUuidCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetColorCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetGeometryValueCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetGeometryCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="MultiCmdsCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="AddScriptCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="RemoveScriptCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetScriptValueCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetMaterialCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetMaterialValueCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetMaterialColorCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetMaterialMapCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+<file name="SetSceneCommand.js" server="117.78.45.129" local="131581090570000000" remote="131699575200000000" Dst="0" />
+</dwsync>

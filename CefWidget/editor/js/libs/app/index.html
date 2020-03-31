@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>穗源网络科技</title>
+		<meta charset="utf-8">
+		<meta name="generator" content="Three.js Editor">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: sans-serif;
+				font-size: 13px;
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+            #logo_SVG{position:absolute; left: 50%;top: 50%;transform: translate(-50%,-50%);}
+            
+            #background_block{position:absolute;width:100%;height:100%;background-color: black;overflow: hidden;}
+		</style>
+	</head>
+	<body ontouchstart="">
+		<script src="js/three.min.js"></script>
+		<script src="js/app.js"></script>
+		<script src="js/EditorControls.js"></script>
+        <script src="js/progressbar.min.js"></script>
+        <script src="js/Opacity.js"></script>
+		<!-- includes -->
+		
+		<div id="del">
+		<div id="background_block"></div>
+		<div id="logo_SVG"></div>
+		</div>
+		
+		<script>
+
+			var loader = new THREE.FileLoader();
+			loader.load( 'app.json', function ( text ) {
+
+				var player = new APP.Player();
+				player.load( JSON.parse( text ) );
+				player.setSize( window.innerWidth, window.innerHeight );
+				player.play();
+
+				document.body.appendChild( player.dom );
+
+				window.addEventListener( 'resize', function () {
+					player.setSize( window.innerWidth, window.innerHeight );
+				} );
+			} );
+			/* edit button */
+		</script>
+		
+		
+		
+		
+		
+		<!--进度条-->
+		<script>
+        
+        /*延迟时间*/
+        var delay_time = 0;     
+            
+            
+          function setOpacity(ele, opacity) { 
+            if (ele.style.opacity != undefined) { 
+            ///兼容FF和GG和新版本IE 
+            ele.style.opacity = opacity / 100; 
+
+            } else { 
+            ///兼容老版本ie 
+            ele.style.filter = "alpha(opacity=" + opacity + ")"; 
+            } 
+            } 
+             
+            function fadeout(ele,speed) { 
+                
+                if (ele) { 
+                     var v = ele.style.filter.replace("alpha(opacity=", "").replace(")", "") || ele.style.opacity || 100;  
+                    timer = setInterval(function() {  
+                        if (v  > 0) {  
+                            v -= 1/(speed/1000);  
+                            setOpacity(ele, v);  
+                        } else {  
+                            clearInterval(timer);  
+                        }  
+                    }, 0);  
+                } 
+            } 
+
+            
+            var bar = new ProgressBar.Line(logo_SVG, { 
+              strokeWidth: 4,
+              easing: 'easeInOut',
+              duration: 1000,
+              color: '#FFEA82',
+              trailColor: '#eee',
+              trailWidth: 1,
+              svgStyle: {width: '100%', height: '50%'},
+              text: {
+                style: {
+                  color: '#eee',
+                  position: 'absolute',
+                  right: '45%',
+                  top: '75%',
+                  padding: '5px',
+                  margin: 0,
+                  transform: null
+                },
+                autoStyleContainer: false
+              },
+              from: {color: '#FFEA82'},
+              to: {color: '#1d815e'},
+              step: (state, bar) => {
+                bar.path.setAttribute('stroke', state.color);
+                bar.setText(Math.round(bar.value() * 100) + ' %');
+              }
+            });
+            
+            bar.animate(.57);
+            
+            setTimeout("bar.animate(1)",delay_time);
+            setTimeout("fadeout(document.getElementById('logo_SVG'), 1000);fadeout(document.getElementById('background_block'), 1000);",delay_time + 1000);
+            
+            setTimeout("document.getElementById('del').removeChild(document.getElementById('logo_SVG')); document.getElementById('del').removeChild(document.getElementById('background_block'));",delay_time + 2000);
+        
+        </script>
+	</body>
+</html>
+
+
+
