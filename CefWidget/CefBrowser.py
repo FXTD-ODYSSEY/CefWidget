@@ -168,9 +168,9 @@ def autoCefEmbed(port=None,cefHandler=None):
                 self.deleteLater()
                 return
 
-            # server = subprocess.Popen([remote,str(port)],shell=True)
-            remote = os.path.join(DIR,"remote.py")
-            server = subprocess.Popen([sys.executable,remote,str(port)],shell=True)
+            server = subprocess.Popen([remote,str(port)],shell=True)
+            # remote = os.path.join(DIR,"remote.py")
+            # server = subprocess.Popen([sys.executable,remote,str(port)],shell=True)
             
 
             # NOTE 必须要显示出来，否则嵌入操作会出错

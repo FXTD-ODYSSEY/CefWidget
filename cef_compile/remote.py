@@ -86,8 +86,14 @@ class RemoteBrowser(object):
 
             cef.MessageLoopWork()
             
-            # if time.time() - self.connect_time < .1:continue
-            # self.connect_time = time.time()
+            
+
+            # for uuid,[browser,winId] in self.browser_dict.items():
+            #     print uuid,browser.WasResized()
+                # if browser.WasResized():
+            if time.time() - self.connect_time < .05:continue
+            self.connect_time = time.time()
+            
 
             try:
                 client,addr = self.s.accept()     

@@ -1,6 +1,6 @@
 
 import sys
-MODULE = r"D:\Users\82047\Desktop\repo\CefWidget"
+MODULE = r"C:\Users\timmyliang\Desktop\repo\CefWidget"
 if MODULE not in sys.path:
     sys.path.append(MODULE)
 
