@@ -78,7 +78,7 @@ Sidebar.Object = function ( editor ) {
 	objectUUIDRow.add( objectUUID );
 	objectUUIDRow.add( objectUUIDRenew );
 
-//	container.add( objectUUIDRow );
+	container.add( objectUUIDRow );
 
 	// name
 
@@ -247,7 +247,7 @@ Sidebar.Object = function ( editor ) {
 	var objectShadowRadius = new UI.Number( 1 ).onChange( update );
 	objectShadowRow.add( objectShadowRadius );
 
-//	container.add( objectShadowRow );
+	container.add( objectShadowRow );
 
 	// visible
 
@@ -286,7 +286,7 @@ Sidebar.Object = function ( editor ) {
 	objectUserDataRow.add( new UI.Text( 'User data' ).setWidth( '90px' ) );
 	objectUserDataRow.add( objectUserData );
 
-//	container.add( objectUserDataRow );
+	// container.add( objectUserDataRow );
 
 
 	//

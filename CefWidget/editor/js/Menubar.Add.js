@@ -43,7 +43,7 @@ Menubar.Add = function ( editor ) {
 	option.onClick( function () {
 
 		var geometry = new THREE.PlaneBufferGeometry( 1, 1, 1, 1 );
-		var material = new THREE.MeshBasicMaterial();
+		var material = new THREE.MeshLambertMaterial();
 		var mesh = new THREE.Mesh( geometry, material );
 		mesh.name = '平面';
 
@@ -60,7 +60,7 @@ Menubar.Add = function ( editor ) {
 	option.onClick( function () {
 
 		var geometry = new THREE.BoxBufferGeometry( 1, 1, 1, 1, 1, 1 );
-		var mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial() );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = '方块';
 
 		editor.execute( new AddObjectCommand( mesh ) );
@@ -76,7 +76,7 @@ Menubar.Add = function ( editor ) {
 	option.onClick( function () {
 
 		var geometry = new THREE.CircleBufferGeometry( 1, 8, 0, Math.PI * 2 );
-		var mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial() );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = '圆';
 
 		editor.execute( new AddObjectCommand( mesh ) );
@@ -92,7 +92,7 @@ Menubar.Add = function ( editor ) {
 	option.onClick( function () {
 
 		var geometry = new THREE.CylinderBufferGeometry( 1, 1, 1, 8, 1, false, 0, Math.PI * 2 );
-		var mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial() );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = '圆柱';
 
 		editor.execute( new AddObjectCommand( mesh ) );
@@ -108,7 +108,7 @@ Menubar.Add = function ( editor ) {
 	option.onClick( function () {
 
 		var geometry = new THREE.SphereBufferGeometry( 1, 8, 6, 0, Math.PI * 2, 0, Math.PI );
-		var mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial() );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = '球';
 
 		editor.execute( new AddObjectCommand( mesh ) );
@@ -124,7 +124,7 @@ Menubar.Add = function ( editor ) {
 	option.onClick( function () {
 
 		var geometry = new THREE.IcosahedronGeometry( 1, 0 );
-		var mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial() );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = '二十面体';
 
 		editor.execute( new AddObjectCommand( mesh ) );
@@ -140,7 +140,7 @@ Menubar.Add = function ( editor ) {
 	option.onClick( function () {
 
 		var geometry = new THREE.TorusBufferGeometry( 1, 0.4, 8, 6, Math.PI * 2 );
-		var mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial() );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = '圆环面';
 
 		editor.execute( new AddObjectCommand( mesh ) );
@@ -156,7 +156,7 @@ Menubar.Add = function ( editor ) {
 	option.onClick( function () {
 
 		var geometry = new THREE.TorusKnotBufferGeometry( 1, 0.4, 64, 8, 2, 3 );
-		var mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial() );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = '环面纽结';
 
 		editor.execute( new AddObjectCommand( mesh ) );
@@ -180,7 +180,7 @@ Menubar.Add = function ( editor ) {
 		var fitLid = false;
 		var blinnScale = true;
 
-		var material = new THREE.MeshBasicMaterial();
+		var material = new THREE.MeshLambertMaterial();
 
 		var geometry = new THREE.TeapotBufferGeometry( size, segments, bottom, lid, body, fitLid, blinnScale );
 		var mesh = new THREE.Mesh( geometry, material );
@@ -215,7 +215,7 @@ Menubar.Add = function ( editor ) {
 //		];
 //
 //		var geometry = new THREE.LatheBufferGeometry( points, 12, 0, Math.PI * 2 );
-//		var mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { side: THREE.DoubleSide } ) );
+//		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { side: THREE.DoubleSide } ) );
 //		mesh.name = 'Lathe';
 //
 //		editor.execute( new AddObjectCommand( mesh ) );
@@ -346,22 +346,22 @@ Menubar.Add = function ( editor ) {
 
 	//
 
-//	options.add( new UI.HorizontalRule() );
-//
-//	// PerspectiveCamera
-//
-//	var option = new UI.Row();
-//	option.setClass( 'option' );
-//	option.setTextContent( 'PerspectiveCamera' );
-//	option.onClick( function() {
-//
-//		var camera = new THREE.PerspectiveCamera( 50, 1, 1, 10000 );
-//		camera.name = 'PerspectiveCamera';
-//
-//		editor.execute( new AddObjectCommand( camera ) );
-//
-//	} );
-//	options.add( option );
+	options.add( new UI.HorizontalRule() );
+
+	// PerspectiveCamera
+
+	var option = new UI.Row();
+	option.setClass( 'option' );
+	option.setTextContent( 'PerspectiveCamera' );
+	option.onClick( function() {
+
+		var camera = new THREE.PerspectiveCamera( 50, 1, 1, 10000 );
+		camera.name = 'PerspectiveCamera';
+
+		editor.execute( new AddObjectCommand( camera ) );
+
+	} );
+	options.add( option );
 
 	return container;
 

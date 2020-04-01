@@ -13,7 +13,10 @@ var Viewport = function ( editor ) {
     container.add(info);
     
     var Logo =  new Viewport.Logo( editor );
-    container.add(Logo);
+	container.add(Logo);
+	
+    var menu =  new Viewport.RightMenu( editor );
+    // container.add(menu);
 	
 
 	//

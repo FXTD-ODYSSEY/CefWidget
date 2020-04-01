@@ -11,7 +11,7 @@
 <body ontouchstart="">
 	<link href="css/main.css" rel="stylesheet" />
 	<link id="theme" href="css/dark.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<!-- <script src="plugin/jquery-3.3.1.min.js"></script> -->
 	<script src="js/build/three.js"></script>
 	<script src="js/examples/js/libs/system.min.js"></script>
@@ -45,9 +45,9 @@
 	<script src="js/examples/js/loaders/ctm/CTMLoader.js"></script>
 
 
-			<script src="js/examples/js/exporters/OBJExporter.js"></script>
-			<script src="js/examples/js/exporters/GLTFExporter.js"></script>
-			<script src="js/examples/js/exporters/STLExporter.js"></script>
+	<script src="js/examples/js/exporters/OBJExporter.js"></script>
+	<script src="js/examples/js/exporters/GLTFExporter.js"></script>
+	<script src="js/examples/js/exporters/STLExporter.js"></script>
 
 	<script src="js/examples/js/renderers/Projector.js"></script>
 	<script src="js/examples/js/renderers/CanvasRenderer.js"></script>
@@ -149,6 +149,7 @@
 	<script src="js/Viewport.js"></script>
 	<script src="js/Viewport.Info.js"></script>
 	<script src="js/Viewport.Logo.js"></script>
+	<script src="js/Viewport.RightMenu.js"></script>
 
 	<script src="js/Command.js"></script>
 	<script src="js/commands/AddObjectCommand.js"></script>
@@ -171,12 +172,13 @@
 	<script src="js/commands/SetMaterialColorCommand.js"></script>
 	<script src="js/commands/SetMaterialMapCommand.js"></script>
 	<script src="js/commands/SetSceneCommand.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.0.1/progressbar.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.0.1/progressbar.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.animation.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.animation.min.css"
+		rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.min.css" rel="stylesheet">
 
-    
+
 	<!-- <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="qyqgfqd9j8z890t"></script> -->
 
 	<!--
@@ -216,159 +218,7 @@
 
 	<script>
 
-		/*************************/
-		/***添加tooltip的函数封装***/
-		/************************/
-		function tooltip_anim(id,text,direction,animateType,color){
-			var tooltip = new HTML5TooltipUIComponent;
-			var target = document.getElementById(id);
-			
-			//预设没有传参的数据
-			animateType = animateType ===undefined ? "scalein" : animateType; 
-			color = color === undefined ? 'bamboo' :color;
-			direction = direction === undefined ?'left':direction;
-			tooltip.set({
-			animateFunction: animateType,
-			color: color,
-			contentText: text,
-			stickTo: direction,
-			target: target
-			});
-
-			target.addEventListener('mouseenter',function(){
-				tooltip.show();//鼠标在上面时显示tooltip
-			});
-
-			target.addEventListener('mouseleave',function(){
-			tooltip.hide();//鼠标离开时取消显示
-			});
-
-			tooltip.mount();
-			
-			return tooltip;
-		}
-
-		//使用JQuery实现按钮添加
-		var bar_path_Su,bar_path_S,bar_path_Y,bar_path_an,bar_path_Yu,bar_path_logobar_path_i_upper,bar_path_i_lower,tooltip_stop,tooltip_background;
-		$(function(){ 
-				
-				// //webgl加载失败时显示提示 代码复制自webglreport.js 
-				// var webglVersion = window.location.search.indexOf('v=2') > 0 ? 2 : 1;
-				// var report = {
-				// 	platform: navigator.platform,
-				// 	userAgent: navigator.userAgent,
-				// 	webglVersion: webglVersion
-				// };
-
-				// if (webglVersion === 2) {
-				// 	$('body').addClass('webgl2');
-				// }
-
-				// if ((webglVersion === 2 && !window.WebGL2RenderingContext) ||
-				// 	(webglVersion === 1 && !window.WebGLRenderingContext)) {
-				// 	// The browser does not support WebGL
-				// 	//显示浏览器不支持webgl的信息
-				// 	webgl_fail();
-				// 	return;
-				// }
-
-
-				// var canvas = $('<canvas />', { width: '1', height: '1' }).appendTo('body');
-				// var gl;
-				// var possibleNames = (webglVersion === 2) ? ['webgl2', 'experimental-webgl2'] : ['webgl', 'experimental-webgl'];
-				// var contextName = _.find(possibleNames, function (name) {
-				// 	gl = canvas[0].getContext(name, { stencil: true });
-				// 	return !!gl;
-				// });
-				// canvas.remove();
-
-				// if (!gl) {
-				// 	// The browser supports WebGL, but initialization failed
-				// 	//显示浏览器需要开启webgl的信息
-				// 	webgl_update();
-				// 	return;
-				// }
-			
-			//添加按钮的CSS样式
-			var main_css = $("<style></style>").text("#container{position:absolute;width:100%;height:5%;margin-top:40% ;right:25%;}#logo{position:absolute;width:40%;left:40%;top:30%;} #main{position: fixed;bottom: 20px;right: 20px;padding: 1px 15px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;transition: transform 0.2s linear;}  #main:hover {cursor: pointer;opacity: 1;transform: rotate(180deg);}#help_btn {position: fixed;bottom: 100px;right: 30px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}#full_btn {position: fixed;bottom: 150px;right: 30px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}#share_btn {position: fixed;bottom: 200px;right: 30px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}#stop_btn {position: fixed;bottom: 250px;right: 30px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}#origin_btn {position: fixed;bottom: 300px;right: 30px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}     #color_dark_btn {position: fixed;bottom: 200px;right: 80px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;}    #color_white_btn {position: fixed;bottom: 200px;right: 80px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;} #color_white_btn_small {position: fixed;bottom: 20px;right: 20px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;} #color_dark_btn_small {position: fixed;bottom: 20px;right: 45px;padding: 5px 5px;color: #fff;background-color: #89a;opacity: 0.7;border-radius: 50%;font-size: 50px;cursor:pointer;} #panel {padding: 0; margin: 0; width: 200px;height: 500px;background: #a0a0f0;position: absolute;right:3px;top:20%;border:2px solid #bbb}    #blocker {position: absolute; top:0px;width: 100%;height: 100%;background-color: rgba(0,0,0,0.5);}    #instructions {width: 100%;height: 100%;display: -webkit-box;display: -moz-box;display: box;-webkit-box-orient: horizontal;-moz-box-orient: horizontal;box-orient: horizontal;-webkit-box-pack: center;-moz-box-pack: center;box-pack: center;-webkit-box-align: center;-moz-box-align: center;box-align: center;color: #ffffff;text-align: center;cursor: pointer;}");
-			
-			$("body").append(main_css);
-			
-
-			//添加按钮
-			$("#webgl").after("<button id='main' onclick='icon_display()' onDblClick='express()'>+</button>");
-			
-			tooltip_anim("main","主菜单");
-			
-			$("#webgl").after("<img id='help_btn' src='https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/ico/information.ico' width='32px' height='32px' onclick='help_display()'>") 
-			
-			tooltip_anim("help_btn","帮助");//添加按钮tooltip
-			
-			$("#help_btn").hide();//隐藏按钮
-			
-			$("#webgl").after("<img id='full_btn' src='https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/ico/statusNotDone.ico' width='32px' height='32px' onclick='full_screen_fun()'>") 
-			
-			tooltip_anim("full_btn","全屏");//添加按钮tooltip
-			
-			$("#full_btn").hide();//隐藏按钮
-			
-			$("#webgl").after("<img id='share_btn' src='https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/ico/flag.ico' width='32px' height='32px' onclick='share_display()'>") 
-			
-			tooltip_background = tooltip_anim("share_btn","背景颜色");//这里用这个无法删除改变按钮
-			
-			$("#share_btn").hide();//隐藏按钮
-			
-			$("#webgl").after("<img id='stop_btn' src='https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/ico/jumplist_pausealltask.ico' width='32px' height='32px' onclick='rotate_stop()'>") 
-			
-			tooltip_stop = tooltip_anim("stop_btn","暂停旋转");//添加按钮tooltip
-			
-			$("#stop_btn").hide();//隐藏按钮
-			
-			$("#webgl").after("<img id='origin_btn' src='https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/ico/sync.ico' width='32px' height='32px'onclick='origin_position()'>") 
-			
-			tooltip_anim("origin_btn","初始位置");//添加按钮tooltip
-			
-			$("#origin_btn").hide();//隐藏按钮
-			
-			$("#webgl").after("<img id='color_white_btn' src='https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/ico/white.jpg' width='32px' height='32px'onclick='white_BG()'>") 
-			
-			tooltip_anim("color_white_btn","白背景",'top');//添加按钮tooltip
-			
-			$("#color_white_btn").hide();//隐藏按钮
-			
-			$("#webgl").after("<img id='color_dark_btn' src='https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/ico/dark.jpg' width='32px' height='32px'onclick='dark_BG()'>") 
-			
-			tooltip_anim("color_dark_btn","黑背景",'top');//添加按钮tooltip
-			
-			$("#color_dark_btn").hide();//隐藏按钮
-			
-			$("#webgl").after("<img id='color_white_btn_small' src='https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/ico/white.jpg' width='10px' height='10px'onclick='white_BG()' >") 
-			
-			tooltip_anim("color_white_btn_small","白背景",'top');//添加按钮tooltip
-			
-			$("#color_white_btn_small").hide();//隐藏按钮
-			
-			$("#webgl").after("<img id='color_dark_btn_small' src='https://blog-1257068932.cos.ap-guangzhou.myqcloud.com/OPENGL_homework/ico/dark.jpg' width='10px' height='10px'onclick='dark_BG()' >")   
-			
-			tooltip_anim("color_dark_btn_small","黑背景",'top');//添加按钮tooltip
-			
-			$("#color_dark_btn_small").hide();//隐藏按钮
-			
-			
-			ico_size();//默认使用小图标（大图标在手机端竖屏时使用）
-			
-			//如果当前窗口过小，隐藏主菜单按钮
-			if(window.innerHeight<300 || window.innerWidth < 300){
-						rotate_stop();
-						$("#main").hide();
-						$("#color_white_btn_small").show();
-						$("#color_dark_btn_small").show();
-			}
-			
-			
-			html5tooltips.refresh();//通过这个刷新tooltip 方可正常显示
-		});
-
+		
 
 		$('#title').css({
 			"text-align": "center",
@@ -394,9 +244,9 @@
 
 		$('#viewport').css({
 			'width': '100%',
-			'height': '100%',
+			'height': '100%-72px',
 		})
-		$('#info').hide()
+		// $('#info').hide()
 
 		//			var script = new Script( editor );
 		//			document.body.appendChild( script.dom );
@@ -405,20 +255,18 @@
 		document.body.appendChild(player.dom);
 
 		var toolbar = new Toolbar(editor);
-		// document.body.appendChild( toolbar.dom );
+		$(toolbar.dom).css("width","100%")
+		document.body.appendChild( toolbar.dom );
 
 		var menubar = new Menubar(editor);
 		document.body.appendChild(menubar.dom);
 
 		var sidebar = new Sidebar(editor);
-		// document.body.appendChild( sidebar.dom );
+		document.body.appendChild( sidebar.dom );
 
 		var modal = new UI.Modal();
 		document.body.appendChild(modal.dom);
 
-		//
-
-		//			editor.setTheme( editor.config.getKey( 'theme' ) );
 
 		editor.clear();
 
