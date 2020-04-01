@@ -12,6 +12,8 @@ from PySide.QtGui import *
 from PySide.QtCore import *
 # from Qt.QtWidgets import *
 
+CefWidget.initialize()
+
 class TestWidget(QWidget):
 
     @autoCefEmbed()
