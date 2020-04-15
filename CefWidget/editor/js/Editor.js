@@ -8,7 +8,7 @@ var Editor = function () {
 	this.DEFAULT_CAMERA.name = '摄像机';
 	this.DEFAULT_CAMERA.position.set( 20, 10, 20 );
 	this.DEFAULT_CAMERA.lookAt( new THREE.Vector3() );
-
+	
 	var Signal = signals.Signal;
 
 	this.signals = {
@@ -39,6 +39,8 @@ var Editor = function () {
 		snapChanged: new Signal(),
 		spaceChanged: new Signal(),
 		rendererChanged: new Signal(),
+
+		editorInitialized: new Signal(),
 
 		sceneBackgroundChanged: new Signal(),
 		sceneFogChanged: new Signal(),
@@ -463,6 +465,7 @@ Editor.prototype = {
 		this.deselect();
 
 		this.signals.editorCleared.dispatch();
+		this.controls.addLight(editor);
 
 	},
 

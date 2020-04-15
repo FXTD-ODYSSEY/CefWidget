@@ -352,11 +352,11 @@ Menubar.Add = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'PerspectiveCamera' );
+	option.setTextContent( '透视摄像机' );
 	option.onClick( function() {
 
 		var camera = new THREE.PerspectiveCamera( 50, 1, 1, 10000 );
-		camera.name = 'PerspectiveCamera';
+		camera.name = '透视摄像机';
 
 		editor.execute( new AddObjectCommand( camera ) );
 

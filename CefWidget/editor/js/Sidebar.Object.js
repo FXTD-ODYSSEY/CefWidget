@@ -167,7 +167,7 @@ Sidebar.Object = function ( editor ) {
 	var objectIntensityRow = new UI.Row();
 	var objectIntensity = new UI.Number().setRange( 0, Infinity ).onChange( update );
 
-	objectIntensityRow.add( new UI.Text( '强度' ).setWidth( '90px' ) );
+	objectIntensityRow.add( new UI.Text( '灯光强度' ).setWidth( '90px' ) );
 	objectIntensityRow.add( objectIntensity );
 
 	container.add( objectIntensityRow );
@@ -177,7 +177,7 @@ Sidebar.Object = function ( editor ) {
 	var objectColorRow = new UI.Row();
 	var objectColor = new UI.Color().onChange( update );
 
-	objectColorRow.add( new UI.Text( '颜色' ).setWidth( '90px' ) );
+	objectColorRow.add( new UI.Text( '灯光颜色' ).setWidth( '90px' ) );
 	objectColorRow.add( objectColor );
 
 	container.add( objectColorRow );
@@ -387,10 +387,13 @@ Sidebar.Object = function ( editor ) {
 				editor.execute( new SetValueCommand( object, 'far', objectFar.getValue() ) );
 
 			}
-
+			
 			if ( object.intensity !== undefined && Math.abs( object.intensity - objectIntensity.getValue() ) >= 0.01 ) {
-
-				editor.execute( new SetValueCommand( object, 'intensity', objectIntensity.getValue() ) );
+				var val = objectIntensity.getValue();
+				editor.execute( new SetValueCommand( object, 'intensity', val ) );
+				if (object.setIntensity && val > 0){
+					object.setIntensity(val);
+				}
 
 			}
 
@@ -448,6 +451,8 @@ Sidebar.Object = function ( editor ) {
 				object.material.needsUpdate = true;
 
 			}
+			
+			
 
 			if ( object.shadow !== undefined ) {
 
@@ -674,4 +679,5 @@ Sidebar.Object = function ( editor ) {
 
 	return container;
 
+	
 };

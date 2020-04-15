@@ -78,7 +78,7 @@ var Viewport = function ( editor ) {
 		objectRotationOnDown = object.rotation.clone();
 		objectScaleOnDown = object.scale.clone();
 
-		controls.enabled = false;
+		editor.controls.enabled = false;
 
 	} );
 	transformControls.addEventListener( 'mouseUp', function () {
@@ -123,7 +123,7 @@ var Viewport = function ( editor ) {
 
 		}
 
-		controls.enabled = true;
+		editor.controls.enabled = true;
 
 	} );
 
@@ -261,17 +261,17 @@ var Viewport = function ( editor ) {
 	// controls need to be added *after* main logic,
 	// otherwise controls.enabled doesn't work.
 
-	var controls = new THREE.EditorControls( camera, container.dom );
-    
+	editor.controls = new THREE.EditorControls( camera, container.dom);
+
     if (navigator.userAgent.indexOf('Chrome') != -1) {
         //alert('Chrome');
-        controls.zoomSpeed = .001;
+        editor.controls.zoomSpeed = .001;
     } else if (navigator.userAgent.indexOf('Firefox') != -1) {
         //alert('Firefox');
-        controls.zoomSpeed = .05;
+        editor.controls.zoomSpeed = .05;
     } 
     
-	controls.addEventListener( 'change', function () {
+	editor.controls.addEventListener( 'change', function () {
 
 		transformControls.update();
 		signals.cameraChanged.dispatch( camera );
@@ -279,10 +279,9 @@ var Viewport = function ( editor ) {
 	} );
 
 	// signals
-
 	signals.editorCleared.add( function () {
 
-		controls.center.set( 0, 0, 0 );
+		editor.controls.center.set( 0, 0, 0 );
 		render();
 
 	} );
@@ -385,7 +384,7 @@ var Viewport = function ( editor ) {
 
 	signals.objectFocused.add( function ( object ) {
 
-		controls.focus( object );
+		editor.controls.focus( object );
 
 	} );
 

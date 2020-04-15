@@ -5,12 +5,13 @@
  * @author WestLangley / http://github.com/WestLangley
  */
 
-THREE.EditorControls = function ( object, domElement ) {
+THREE.EditorControls = function ( object, domElement ,editor) {
 
 	domElement = ( domElement !== undefined ) ? domElement : document;
 
 	// API
 
+	this.camera = object;
 	this.enabled = true;
 	this.center = new THREE.Vector3();
 	this.panSpeed = 0.001;
@@ -31,6 +32,41 @@ THREE.EditorControls = function ( object, domElement ) {
 	var pointerOld = new THREE.Vector2();
 	var spherical = new THREE.Spherical();
 
+	this.light = undefined;
+	this.addLight = function (editor,light){
+		
+		scope.light = !light ? new THREE.DirectionalLight( 0xffffff, 1 ) : light;
+		
+		editor.camera.intensity = scope.light.intensity;
+		editor.camera.color = scope.light.color;
+
+		scope.light.name = '相机灯光';
+		// scope.light.target.name = 'Directionalscope.light Target';
+
+		// NOTE 同步位置
+		valueChange = function ( event ) {
+			scope.light.lookAt( center);
+			scope.light.position.set( scope.camera.position.x,scope.camera.position.y,scope.camera.position.z);
+		}
+		valueChange();
+
+		// NOTE 设置大纲不显示
+		scope.light.outlinerHide = true;
+
+		editor.scene.add( scope.light );
+		
+		// NOTE 添加相机位置 同步
+		scope.addEventListener( 'change', valueChange);
+
+		editor.camera.setIntensity = function(intensity){
+			scope.light.intensity = intensity;
+		}
+	}
+
+	this.changeCamera = function(camera){
+		scope.camera = camera;
+	}
+	
 	// events
 
 	var changeEvent = { type: 'change' };
@@ -38,19 +74,19 @@ THREE.EditorControls = function ( object, domElement ) {
 	this.focus = function ( target ) {
 
 		var box = new THREE.Box3().setFromObject( target );
-		object.lookAt( center.copy( box.getCenter() ) );
+		scope.camera.lookAt( center.copy( box.getCenter() ) );
 		scope.dispatchEvent( changeEvent );
 
 	};
 
 	this.pan = function ( delta ) {
 
-		var distance = object.position.distanceTo( center );
+		var distance = scope.camera.position.distanceTo( center );
 
 		delta.multiplyScalar( distance * scope.panSpeed );
-		delta.applyMatrix3( normalMatrix.getNormalMatrix( object.matrix ) );
+		delta.applyMatrix3( normalMatrix.getNormalMatrix( scope.camera.matrix ) );
 
-		object.position.add( delta );
+		scope.camera.position.add( delta );
 		center.add( delta );
 
 		scope.dispatchEvent( changeEvent );
@@ -59,15 +95,15 @@ THREE.EditorControls = function ( object, domElement ) {
 
 	this.zoom = function ( delta ) {
 
-		var distance = object.position.distanceTo( center );
+		var distance = scope.camera.position.distanceTo( center );
 
 		delta.multiplyScalar( distance * scope.zoomSpeed );
 
 		if ( delta.length() > distance ) return;
 
-		delta.applyMatrix3( normalMatrix.getNormalMatrix( object.matrix ) );
+		delta.applyMatrix3( normalMatrix.getNormalMatrix( scope.camera.matrix ) );
 
-		object.position.add( delta );
+		scope.camera.position.add( delta );
 
 		scope.dispatchEvent( changeEvent );
 
@@ -75,7 +111,7 @@ THREE.EditorControls = function ( object, domElement ) {
 
 	this.rotate = function ( delta ) {
 
-		vector.copy( object.position ).sub( center );
+		vector.copy( scope.camera.position ).sub( center );
 
 		spherical.setFromVector3( vector );
 
@@ -86,9 +122,9 @@ THREE.EditorControls = function ( object, domElement ) {
 
 		vector.setFromSpherical( spherical );
 
-		object.position.copy( center ).add( vector );
+		scope.camera.position.copy( center ).add( vector );
 
-		object.lookAt( center );
+		scope.camera.lookAt( center );
 
 		scope.dispatchEvent( changeEvent );
 

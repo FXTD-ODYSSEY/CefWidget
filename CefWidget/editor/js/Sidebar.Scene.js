@@ -145,7 +145,7 @@ Sidebar.Scene = function ( editor ) {
 	fogTypeRow.add( new UI.Text( '雾' ).setWidth( '90px' ) );
 	fogTypeRow.add( fogType );
 
-	container.add( fogTypeRow );
+	// container.add( fogTypeRow );
 
 	// fog color
 
@@ -191,9 +191,13 @@ Sidebar.Scene = function ( editor ) {
 
 				var object = objects[ i ];
 
-				var option = buildOption( object, true );
-				option.style.paddingLeft = ( pad * 10 ) + 'px';
-				options.push( option );
+				// NOTE 如果物体设置了 outlinerHide 则隐藏
+				if (object.outlinerHide != true){
+					var option = buildOption( object, true );
+					option.style.paddingLeft = ( pad * 10 ) + 'px';
+					options.push( option );
+				}
+				
 
 				addObjects( object.children, pad + 1 );
 

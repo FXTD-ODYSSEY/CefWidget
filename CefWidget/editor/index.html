@@ -172,6 +172,8 @@
 	<script src="js/commands/SetMaterialColorCommand.js"></script>
 	<script src="js/commands/SetMaterialMapCommand.js"></script>
 	<script src="js/commands/SetSceneCommand.js"></script>
+
+	
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.0.1/progressbar.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.min.js"></script>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.animation.min.css"
@@ -266,9 +268,9 @@
 
 		var modal = new UI.Modal();
 		document.body.appendChild(modal.dom);
-
-
+		
 		editor.clear();
+		editor.signals.editorInitialized.dispatch();
 
 		editor.storage.init(function () {
 
