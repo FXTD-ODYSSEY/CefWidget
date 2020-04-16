@@ -26,11 +26,11 @@ class TestWidget(QWidget):
         
         m_vbox = QVBoxLayout()
         m_button = QPushButton("Change Url")
-        m_button.clicked.connect(lambda:self.view.loadUrl(r"http://editor.l0v0.com/"))
+        m_button.clicked.connect(lambda:self.view.loadUrl(r"C:\Users\timmyliang\Desktop\repo\CefWidget\CefWidget\editor\index.html"))
         m_vbox.addWidget(m_button)
 
-        m_button = QPushButton("Change Url2")
-        m_button.clicked.connect(lambda:self.view.loadUrl(r"http://www.bing.com/"))
+        m_button = QPushButton("load model Asset")
+        m_button.clicked.connect(lambda:self.view.loadAsset(r"C:\Users\timmyliang\Desktop\test.fbx"))
         m_vbox.addWidget(m_button)
         
         m_button = QPushButton("Reload Url")

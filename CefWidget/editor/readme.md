@@ -12,5 +12,5 @@
 - [ ] ~~摄像机视角切换~~
 - [ ] ~~将右侧的大纲移动到左侧~~
 - [x] 四视图 https://threejs.org/examples/?q=view#webgl_multiple_views
-- [ ] CefWidget 绑定导入
+- [x] CefWidget js绑定 导入
 - [x] 删除 雾 属性

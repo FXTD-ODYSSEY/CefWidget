@@ -223,7 +223,6 @@ Viewport.RightMenu = function ( editor ) {
 	editor.scene.add( this.ortho_camera );
 	var scope = this;
 
-	console.log(this.ortho_camera)
 	tooltip_anim("main", "主菜单");
 	
 	$("body").after("<img id='front_view' src='./img/front.png' width='32px' height='32px'>")
@@ -272,8 +271,7 @@ Viewport.RightMenu = function ( editor ) {
 		editor.controls.center = new THREE.Vector3();
 		editor.controls.changeCamera(scope.perps_camera);
 		editor.signals.sceneGraphChanged.dispatch();
-		if (editor.selected)
-		editor.controls.focus( editor.selected  );
+		editor.controls.focus( editor.selected ? editor.selected : editor.scene);
 	});
 
 
@@ -283,7 +281,7 @@ Viewport.RightMenu = function ( editor ) {
 
 	$("#sidebar_toggle").hide();//隐藏按钮
 	$("#sidebar_toggle").click(function (){
-		$("#sidebar").toggle()
+		$("#sidebar").toggle(200)
 	});
 
 	$("body").after("<img id='info_toggle' src='./img/info.png' width='32px' height='32px'>")
@@ -292,8 +290,8 @@ Viewport.RightMenu = function ( editor ) {
 
 	$("#info_toggle").hide();//隐藏按钮
 	$("#info_toggle").click(function (){
-		$("#toolbar").toggle()
-		$("#info").toggle()
+		$("#toolbar").toggle(200)
+		$("#info").toggle(200)
 	});
 
 	html5tooltips.refresh();//通过这个刷新tooltip 方可正常显示

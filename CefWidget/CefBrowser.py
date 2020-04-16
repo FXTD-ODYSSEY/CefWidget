@@ -98,6 +98,9 @@ class CefBrowser(QWidget):
 
     def loadUrl(self,url):
         self.connect("loadUrl;;%s;;%s" % (self.browser_uuid,url))
+        
+    def loadAsset(self,filename):
+        self.connect("loadAsset;;%s;;%s" % (self.browser_uuid,filename))
 
     def getUrl(self):
         return self.connect("getUrl;;%s" % self.browser_uuid,recv=True)

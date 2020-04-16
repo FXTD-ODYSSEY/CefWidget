@@ -69,6 +69,7 @@ class RemoteBrowser(object):
         self.browser_dict = {}
 
         self.callback_dict = {
+            'loadAsset':lambda collections,filename: collections.browser.ExecuteFunction("loadAsset",filename) if collections.browser else None ,
             'loadUrl':lambda collections,url: collections.browser.LoadUrl(url) if collections.browser and collections.browser.GetUrl() != url else None ,
             'getUrl':lambda collections: collections.browser.GetUrl() if collections.browser else None ,
             'goBack':lambda collections: collections.browser.GoBack() if collections.browser and collections.browser.CanGoBack() else None ,
@@ -95,19 +96,22 @@ class RemoteBrowser(object):
 
     def start(self):
         ret = None
+        self.stop_time = time.time()
         self.update_time = time.time()
         self.resize_protect = time.time()
+        self.resize_protect2 = time.time()
         while True:
             # NOTE 刷新延迟 官方建议要有 10ms
             if time.time() - self.update_time < .01:continue
             self.update_time = time.time()
 
             cef.MessageLoopWork()
-            
 
-            # for uuid,[browser,collections] in self.browser_dict.items():
-            #     print uuid,browser.IsLoading()
-                # if browser.WasResized():
+            # NOTE 自动同步窗口大小
+            if time.time() - self.resize_protect2 > .5:
+                self.resize_protect2 = time.time()
+                for _,collections in self.browser_dict.items():
+                    self.resize(collections)
 
             try:
                 client,addr = self.s.accept()     
@@ -149,8 +153,6 @@ class RemoteBrowser(object):
                 self.resize_protect = time.time()
             elif func_name in self.callback_dict and collections:
                 ret = self.callback_dict[func_name](collections,*arg_list[2:])
-            else:
-                continue
 
             # client.send(str(ret))
         

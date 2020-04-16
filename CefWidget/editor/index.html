@@ -173,13 +173,11 @@
 	<script src="js/commands/SetMaterialMapCommand.js"></script>
 	<script src="js/commands/SetSceneCommand.js"></script>
 
-	
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.0.1/progressbar.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.min.js"></script>
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.animation.min.css"
-		rel="stylesheet">
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/html5tooltipsjs/1.7.2/html5tooltips.min.css" rel="stylesheet">
+	<script src="plugin/progressbar.min.js"></script>
+	<script src="plugin/html5tooltips.min.js"></script>
+	<link href="plugin/html5tooltips.min.css" rel="stylesheet">
 
+	
 
 	<!-- <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="qyqgfqd9j8z890t"></script> -->
 
@@ -361,7 +359,7 @@
 			event.preventDefault();
 
 			if (event.dataTransfer.files.length > 0) {
-
+				// console.log(event.dataTransfer.files)
 				editor.loader.loadFile(event.dataTransfer.files[0]);
 
 			}
@@ -380,28 +378,52 @@
 
 		//
 
-		var isLoadingFromHash = false;
-		var hash = window.location.hash;
+		// var isLoadingFromHash = false;
+		// var hash = window.location.hash;
+		// console.log(hash)
+		// console.log(hash.substr(1, 5))
+		// console.log(hash)
+		// if (hash.substr(1, 16) === 'index.html?file=') {
 
-		if (hash.substr(1, 5) === 'file=') {
+		// 	var file = hash.substr(6);
 
-			var file = hash.substr(6);
+		// 	//				if ( confirm( 'Any unsaved data will be lost. Are you sure?' ) ) {
 
-			//				if ( confirm( 'Any unsaved data will be lost. Are you sure?' ) ) {
+		// 	var loader = new THREE.FileLoader();
+		// 	loader.crossOrigin = '';
+		// 	loader.load(file, function (text) {
 
+		// 		editor.clear();
+		// 		editor.fromJSON(JSON.parse(text));
+
+		// 	});
+
+		// 	isLoadingFromHash = true;
+
+		// 	//				}
+
+		// }
+
+
+		// python 调用用于加载模型路径
+		function loadAsset(filename){
+
+			// https://wangdoc.com/javascript/bom/file.html
 			var loader = new THREE.FileLoader();
-			loader.crossOrigin = '';
-			loader.load(file, function (text) {
-
+			loader.load(filename, function (text) {
+				var file = new File(
+					[text],
+					filename,
+					{}
+				);
 				editor.clear();
-				editor.fromJSON(JSON.parse(text));
-
+				editor.loader.loadFile(file);
+				editor.controls.focus(editor.scene);
+			},function ( xhr ) {
+				console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+			},function(err){
+				alert(err);
 			});
-
-			isLoadingFromHash = true;
-
-			//				}
-
 		}
 
 		/*
