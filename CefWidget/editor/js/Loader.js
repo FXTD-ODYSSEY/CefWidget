@@ -296,7 +296,7 @@ var Loader = function ( editor ) {
                     
                     
                     if(objects.material != undefined)
-                    objects.material = new THREE.MeshBasicMaterial();
+                    objects.material = new THREE.MeshLambertMaterial();
                     
                     if(objects.children != undefined){
                          
@@ -307,7 +307,7 @@ var Loader = function ( editor ) {
 
                                     var object = objects[ i ];
 
-                                    object.material = new THREE.MeshBasicMaterial();
+                                    object.material = new THREE.MeshLambertMaterial();
 
                                     addObjects( object.children );
 

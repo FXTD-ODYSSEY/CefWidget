@@ -246,7 +246,7 @@
 
 		$('#viewport').css({
 			'width': '100%',
-			'height': '100%-72px',
+			'height': '100%',
 		})
 		// $('#info').hide()
 
@@ -270,7 +270,9 @@
 		document.body.appendChild(modal.dom);
 		
 		editor.clear();
-		editor.signals.editorInitialized.dispatch();
+		$("#toolbar").hide()
+		$("#info").hide()
+		$("#sidebar").hide()
 
 		editor.storage.init(function () {
 

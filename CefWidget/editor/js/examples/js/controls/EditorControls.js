@@ -13,6 +13,9 @@ THREE.EditorControls = function ( object, domElement ,editor) {
 
 	this.camera = object;
 	this.enabled = true;
+	this.rotateEnabled = true;
+	this.zoomEnabled = true;
+	this.panEnabled = true;
 	this.center = new THREE.Vector3();
 	this.panSpeed = 0.001;
 	this.zoomSpeed = 0.001;
@@ -33,6 +36,8 @@ THREE.EditorControls = function ( object, domElement ,editor) {
 	var spherical = new THREE.Spherical();
 
 	this.light = undefined;
+	this.ORTHO_PLANE = { XY: 0, XZ: 1, YZ: 2 };
+	// this.plane = 
 	this.addLight = function (editor,light){
 		
 		scope.light = !light ? new THREE.DirectionalLight( 0xffffff, 1 ) : light;
@@ -66,7 +71,7 @@ THREE.EditorControls = function ( object, domElement ,editor) {
 	this.changeCamera = function(camera){
 		scope.camera = camera;
 	}
-	
+
 	// events
 
 	var changeEvent = { type: 'change' };
@@ -80,13 +85,22 @@ THREE.EditorControls = function ( object, domElement ,editor) {
 	};
 
 	this.pan = function ( delta ) {
-
 		var distance = scope.camera.position.distanceTo( center );
+		
+		if (scope.camera.type != "OrthographicCamera"){
 
-		delta.multiplyScalar( distance * scope.panSpeed );
-		delta.applyMatrix3( normalMatrix.getNormalMatrix( scope.camera.matrix ) );
+			delta.multiplyScalar( distance * scope.panSpeed );
+			delta.applyMatrix3( normalMatrix.getNormalMatrix( scope.camera.matrix ) );
+			scope.camera.position.add( delta);
+		}else{
+			delta.applyMatrix3( normalMatrix.getNormalMatrix( scope.camera.matrix ) );
+			mod = 100;
+			scope.camera.position.add( new THREE.Vector3(delta.x/mod,delta.y/mod,delta.z/mod));
+		}
 
-		scope.camera.position.add( delta );
+
+		// console.log(delta)
+		// console.log(scope.camera.position)
 		center.add( delta );
 
 		scope.dispatchEvent( changeEvent );
@@ -94,16 +108,21 @@ THREE.EditorControls = function ( object, domElement ,editor) {
 	};
 
 	this.zoom = function ( delta ) {
+		if (scope.camera.type == "OrthographicCamera"){
+			val = delta.z/1000 ;
+			scope.camera.scale.add(new THREE.Vector3(val,val,val))
+		}else{
+			var distance = scope.camera.position.distanceTo( center );
 
-		var distance = scope.camera.position.distanceTo( center );
+			delta.multiplyScalar( distance * scope.zoomSpeed );
 
-		delta.multiplyScalar( distance * scope.zoomSpeed );
+			if ( delta.length() > distance ) return;
 
-		if ( delta.length() > distance ) return;
+			delta.applyMatrix3( normalMatrix.getNormalMatrix( scope.camera.matrix ) );
 
-		delta.applyMatrix3( normalMatrix.getNormalMatrix( scope.camera.matrix ) );
-
-		scope.camera.position.add( delta );
+			scope.camera.position.add( delta );
+		}
+		
 
 		scope.dispatchEvent( changeEvent );
 
@@ -136,15 +155,15 @@ THREE.EditorControls = function ( object, domElement ,editor) {
 
 		if ( scope.enabled === false ) return;
 
-		if ( event.button === 0 ) {
+		if ( event.button === 0 && scope.rotateEnabled) {
 
 			state = STATE.ROTATE;
 
-		} else if ( event.button === 1 ) {
+		} else if ( event.button === 1 && scope.zoomEnabled) {
 
 			state = STATE.ZOOM;
 
-		} else if ( event.button === 2 ) {
+		} else if ( event.button === 2 && scope.panEnabled) {
 
 			state = STATE.PAN;
 
@@ -162,7 +181,6 @@ THREE.EditorControls = function ( object, domElement ,editor) {
 	function onMouseMove( event ) {
 
 		if ( scope.enabled === false ) return;
-
 		pointer.set( event.clientX, event.clientY );
 
 		var movementX = pointer.x - pointerOld.x;

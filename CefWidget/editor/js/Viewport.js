@@ -23,7 +23,6 @@ var Viewport = function ( editor ) {
 
 	var renderer = null;
 
-	var camera = editor.camera;
 	var scene = editor.scene;
 	var sceneHelpers = editor.sceneHelpers;
 
@@ -48,7 +47,7 @@ var Viewport = function ( editor ) {
 	var objectRotationOnDown = null;
 	var objectScaleOnDown = null;
 
-	var transformControls = new THREE.TransformControls( camera, container.dom );
+	var transformControls = new THREE.TransformControls( editor.camera, container.dom );
 	transformControls.addEventListener( 'change', function () {
 
 		var object = transformControls.object;
@@ -140,7 +139,7 @@ var Viewport = function ( editor ) {
 
 		mouse.set( ( point.x * 2 ) - 1, - ( point.y * 2 ) + 1 );
 
-		raycaster.setFromCamera( mouse, camera );
+		raycaster.setFromCamera( mouse, editor.camera );
 
 		return raycaster.intersectObjects( objects );
 
@@ -261,7 +260,7 @@ var Viewport = function ( editor ) {
 	// controls need to be added *after* main logic,
 	// otherwise controls.enabled doesn't work.
 
-	editor.controls = new THREE.EditorControls( camera, container.dom);
+	editor.controls = new THREE.EditorControls( editor.camera, container.dom);
 
     if (navigator.userAgent.indexOf('Chrome') != -1) {
         //alert('Chrome');
@@ -274,7 +273,7 @@ var Viewport = function ( editor ) {
 	editor.controls.addEventListener( 'change', function () {
 
 		transformControls.update();
-		signals.cameraChanged.dispatch( camera );
+		signals.cameraChanged.dispatch( editor.camera );
 
 	} );
 
@@ -363,7 +362,7 @@ var Viewport = function ( editor ) {
 		selectionBox.visible = false;
 		transformControls.detach();
 
-		if ( object !== null && object !== scene && object !== camera ) {
+		if ( object !== null && object !== scene && object !== editor.camera ) {
 
 			box.setFromObject( object );
 
@@ -523,8 +522,8 @@ var Viewport = function ( editor ) {
 		editor.DEFAULT_CAMERA.aspect = container.dom.offsetWidth / container.dom.offsetHeight;
 		editor.DEFAULT_CAMERA.updateProjectionMatrix();
 
-		camera.aspect = container.dom.offsetWidth / container.dom.offsetHeight;
-		camera.updateProjectionMatrix();
+		editor.camera.aspect = container.dom.offsetWidth / container.dom.offsetHeight;
+		editor.camera.updateProjectionMatrix();
 
 		renderer.setSize( container.dom.offsetWidth, container.dom.offsetHeight );
 
@@ -560,11 +559,11 @@ var Viewport = function ( editor ) {
 		sceneHelpers.updateMatrixWorld();
 		scene.updateMatrixWorld();
 
-		renderer.render( scene, camera );
+		renderer.render( scene, editor.camera );
 
 		if ( renderer instanceof THREE.RaytracingRenderer === false ) {
 
-			renderer.render( sceneHelpers, camera );
+			renderer.render( sceneHelpers, editor.camera );
 
 		}
 

@@ -10,7 +10,7 @@ Viewport.Info = function (editor) {
 	container.setId('info');
 	container.setPosition('absolute');
 	container.setLeft('10px');
-	container.setBottom('10px');
+	container.setBottom('72px');
 	container.setFontSize('12px');
 	container.setColor('#fff');
 

@@ -40,8 +40,6 @@ var Editor = function () {
 		spaceChanged: new Signal(),
 		rendererChanged: new Signal(),
 
-		editorInitialized: new Signal(),
-
 		sceneBackgroundChanged: new Signal(),
 		sceneFogChanged: new Signal(),
 		sceneGraphChanged: new Signal(),
