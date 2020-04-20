@@ -104,7 +104,6 @@ class CefBrowser(QWidget):
         self.connect("loadUrl;;%s;;%s" % (self.browser_uuid,url))
         
     def loadAsset(self,filename):
-        print filename
         self.connect("loadAsset;;%s;;%s" % (self.browser_uuid,filename))
 
     def getUrl(self):

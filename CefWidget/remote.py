@@ -23,17 +23,34 @@ MAC = (platform.system() == "Darwin")
 class BrowserCollections(object):
     pass
 
+class EventDispatcher(object):
+    def __init__(self):
+        self.IsLoading = True
+        self.event_list = []
+
+    def connectEventList(self,event):
+        if self.IsLoading:
+            self.event_list.append(event)
+        else:
+            event()
+    
 class LoadHandler(object):
     IsLoading = True
 
     def __init__(self,collections):
         self.collections = collections
+        self.dispatcher = EventDispatcher()
 
     def OnLoadingStateChange(self, browser, is_loading, **_):
         """Called when the loading state has changed."""
         self.IsLoading = is_loading
+        self.dispatcher.IsLoading = is_loading
         # NOTE 加载完成触发 resize 事件
         if not is_loading:
+            # NOTE 加载完成触发注册的事件
+            for event in self.dispatcher.event_list:
+                event()
+            self.dispatcher.event_list = []
             if WINDOWS:
                 cef.WindowUtils.OnSize(self.collections.winId, 0, 0, 0)
             elif LINUX:
@@ -70,7 +87,8 @@ class RemoteBrowser(object):
         self.browser_dict = {}
 
         self.callback_dict = {
-            'loadAsset':lambda collections,filename: collections.browser.ExecuteFunction("loadAsset",filename) if collections.browser else None ,
+            # NOTE 确保加载完成再触发 模型加载 命令
+            'loadAsset':lambda collections,filename: collections.load_handler.dispatcher.connectEventList(lambda:collections.browser.ExecuteFunction("loadAsset",filename)) if collections.browser else None ,
             'loadUrl':lambda collections,url: collections.browser.LoadUrl(url) if collections.browser and collections.browser.GetUrl() != url else None ,
             'getUrl':lambda collections: collections.browser.GetUrl() if collections.browser else None ,
             'goBack':lambda collections: collections.browser.GoBack() if collections.browser and collections.browser.CanGoBack() else None ,
