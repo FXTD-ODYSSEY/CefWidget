@@ -95,12 +95,12 @@ class RemoteBrowser(object):
         collections.browser.NotifyMoveOrResizeStarted()
 
     def start(self):
-        ret = None
         self.stop_time = time.time()
         self.update_time = time.time()
         self.resize_protect = time.time()
         self.resize_protect2 = time.time()
         while True:
+            ret = None
             # NOTE 刷新延迟 官方建议要有 10ms
             if time.time() - self.update_time < .01:continue
             self.update_time = time.time()
@@ -112,6 +112,7 @@ class RemoteBrowser(object):
                 self.resize_protect2 = time.time()
                 for _,collections in self.browser_dict.items():
                     self.resize(collections)
+      
 
             try:
                 client,addr = self.s.accept()     
@@ -125,7 +126,8 @@ class RemoteBrowser(object):
             collections = self.browser_dict.get(arg_list[1])
             func_name = arg_list[0]
             if func_name == "stop":
-                break
+                del self.browser_dict[arg_list[1]]
+                continue
             elif func_name == "createBrowser" and not collections:
                 url = arg_list[2]
                 winId = int(arg_list[1])
@@ -142,7 +144,7 @@ class RemoteBrowser(object):
                 browser.SetClientHandler(collections.load_handler)
 
                 self.browser_dict[UUID] = (collections)
-            elif func_name == "resize":
+            elif func_name == "resize" and collections:
                 if time.time() - self.resize_protect < .02:continue
                 # NOTE 如果浏览器在加载网页 延缓 resize 避免卡死
                 if collections.load_handler.IsLoading:
@@ -162,5 +164,7 @@ class RemoteBrowser(object):
         cef.Shutdown()
 
 if __name__ == "__main__":
+    print "launch"
     remote = RemoteBrowser()
     remote.start()
+    print "terminate"

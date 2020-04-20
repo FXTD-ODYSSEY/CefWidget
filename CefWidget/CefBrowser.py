@@ -13,6 +13,7 @@ import os
 import sys
 import time
 import uuid
+import signal
 import ctypes
 import socket
 import platform
@@ -55,7 +56,7 @@ class CefBrowser(QWidget):
         self.hidden_window = None  # Required for PyQt5 on Linux
         self.resize_flag = False  
         self.port = None  
-        self.url = url  
+        self.url = url if url else "https://github.com/FXTD-ODYSSEY/CefWidget" 
     
     def connect(self,data,recv=False):
         ret = None
@@ -81,13 +82,20 @@ class CefBrowser(QWidget):
         # NOTE 开启 cef 浏览器
         winId = int(self.getHandle())
         self.browser_uuid = uuid.uuid4()
-        url = self.url if self.url else "https://github.com/FXTD-ODYSSEY/CefWidget"
-        self.connect("createBrowser;;%s;;%s;;%s" % (winId,url,self.browser_uuid))
-        self.window().installEventFilter(self)
+        self.connect("createBrowser;;%s;;%s;;%s" % (winId,self.url,self.browser_uuid))
+
+        # def stop(*args,**kwargs):
+        #     print "stop"
+        #     # self.connect("createBrowser;;%s;;%s;;%s" % (winId,self.url,self.browser_uuid))
+        #     # self.connect("stop;;%s" % (self.browser_uuid))
+        # print self.destroyed
+        # self.destroyed.connect(stop)
+        self.installEventFilter(self)
 
     def eventFilter(self,receiver,event):
         # NOTE 71 为 childRemvoe
         if QCloseEvent == type(event) or event.type() == 71:
+            print "close"
             # NOTE 彻底关闭所有服务
             try:
                 self.connect("stop;;%s" % self.browser_uuid)
@@ -161,22 +169,36 @@ class CefBrowser(QWidget):
             self.connect("resize;;%s;;%s;;%s" % (self.browser_uuid,self.width(),self.height()))
 
 def initialize(port=None):
+
     global PORT
     PORT = port if port else PORT
-    remote = os.path.join(DIR,"cefapp","cefapp.exe")
-    if not os.path.exists(remote):
-        QMessageBox.critical(self,u"error",u"cefapp folder not found \nplease download it from the github repo release\nhttps://github.com/FXTD-ODYSSEY/CefWidget/releases")
-        self.deleteLater()
-        return
 
-    # server = subprocess.Popen([remote,str(port)],shell=True)
-    remote = os.path.join(DIR,"remote.py")
-    server = subprocess.Popen([sys.executable,remote,str(PORT)],shell=True)
+    remote = os.path.join(DIR,"cefapp","cefapp.exe")
+    remote = os.path.join(DIR,"cefapp",".exe")
+    if not os.path.exists(remote):
+        try:
+            remote = os.path.join(DIR,"remote.py")
+            server = subprocess.Popen([sys.executable,remote,str(PORT)],shell=True)
+        except:
+            raise RuntimeError(u"cefapp folder not found \nplease download it from the github repo release\nhttps://github.com/FXTD-ODYSSEY/CefWidget/releases")
+    else:
+        server = subprocess.Popen([remote,str(port)],shell=True)
+        
+    # NOTE 注册退出终止终端事件
+    killPid = lambda:os.kill(int(server.pid), signal.SIGTERM)
+    # def killPid(*args):
+    #     print "kill"
+    #     os.kill(int(server.pid), signal.SIGTERM)
+
+    for sig in (signal.SIGABRT, signal.SIGBREAK, signal.SIGILL, signal.SIGINT, signal.SIGSEGV, signal.SIGTERM):
+        signal.signal(sig,killPid)
 
     # NOTE 等待 socket 服务器启动
     time.sleep(1)
-    
 
+    return server
+
+    
 def autoCefEmbed(cef_callback=None):
     def findAllCefBrowser(parent,cef_list=None):
         """findAllCefBrowser 
