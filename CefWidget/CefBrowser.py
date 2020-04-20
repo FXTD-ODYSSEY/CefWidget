@@ -29,13 +29,13 @@ except ImportError:
     if MODULE not in sys.path and os.path.exists(MODULE):
         sys.path.append(MODULE)
 
-# from Qt.QtGui import *
-# from Qt.QtCore import *
-# from Qt.QtWidgets import *
+from Qt.QtGui import *
+from Qt.QtCore import *
+from Qt.QtWidgets import *
 from Qt import __binding__
 
-from PySide.QtGui import *
-from PySide.QtCore import *
+# from PySide.QtGui import *
+# from PySide.QtCore import *
 
 PYQT4 = (__binding__ == "PyQt4")
 PYQT5 = (__binding__ == "PyQt5")
@@ -47,7 +47,7 @@ LINUX = (platform.system() == "Linux")
 MAC = (platform.system() == "Darwin")
 
 global PORT
-PORT = 4788
+PORT = 4785
 
 class CefBrowser(QWidget):
     def __init__(self, parent = None , url=""):
@@ -56,7 +56,7 @@ class CefBrowser(QWidget):
         self.hidden_window = None  # Required for PyQt5 on Linux
         self.resize_flag = False  
         self.port = None  
-        self.url = url if url else "https://github.com/FXTD-ODYSSEY/CefWidget" 
+        self.url = "https://github.com/FXTD-ODYSSEY/CefWidget"  if not url else os.path.join(__file__,"..","editor","index.html")  if url.lower() == "editor" else url
     
     def connect(self,data,recv=False):
         ret = None
@@ -84,18 +84,11 @@ class CefBrowser(QWidget):
         self.browser_uuid = uuid.uuid4()
         self.connect("createBrowser;;%s;;%s;;%s" % (winId,self.url,self.browser_uuid))
 
-        # def stop(*args,**kwargs):
-        #     print "stop"
-        #     # self.connect("createBrowser;;%s;;%s;;%s" % (winId,self.url,self.browser_uuid))
-        #     # self.connect("stop;;%s" % (self.browser_uuid))
-        # print self.destroyed
-        # self.destroyed.connect(stop)
         self.installEventFilter(self)
 
     def eventFilter(self,receiver,event):
         # NOTE 71 为 childRemvoe
         if QCloseEvent == type(event) or event.type() == 71:
-            print "close"
             # NOTE 彻底关闭所有服务
             try:
                 self.connect("stop;;%s" % self.browser_uuid)
@@ -111,6 +104,7 @@ class CefBrowser(QWidget):
         self.connect("loadUrl;;%s;;%s" % (self.browser_uuid,url))
         
     def loadAsset(self,filename):
+        print filename
         self.connect("loadAsset;;%s;;%s" % (self.browser_uuid,filename))
 
     def getUrl(self):
@@ -183,22 +177,26 @@ def initialize(port=None):
             raise RuntimeError(u"cefapp folder not found \nplease download it from the github repo release\nhttps://github.com/FXTD-ODYSSEY/CefWidget/releases")
     else:
         server = subprocess.Popen([remote,str(port)],shell=True)
-        
-    # NOTE 注册退出终止终端事件
-    killPid = lambda:os.kill(int(server.pid), signal.SIGTERM)
-    # def killPid(*args):
-    #     print "kill"
-    #     os.kill(int(server.pid), signal.SIGTERM)
-
-    for sig in (signal.SIGABRT, signal.SIGBREAK, signal.SIGILL, signal.SIGINT, signal.SIGSEGV, signal.SIGTERM):
-        signal.signal(sig,killPid)
 
     # NOTE 等待 socket 服务器启动
     time.sleep(1)
 
     return server
 
-    
+def teminateRemote():
+    sock = socket.socket()
+    sock.connect((socket.gethostname(), PORT))
+    sock.send("terminate")
+    sock.close()
+
+def autoInitialize(func):
+    def wrapper(*args,**kwargs):
+        initialize()
+        res = func()
+        teminateRemote()
+        return res
+    return wrapper
+
 def autoCefEmbed(cef_callback=None):
     def findAllCefBrowser(parent,cef_list=None):
         """findAllCefBrowser 

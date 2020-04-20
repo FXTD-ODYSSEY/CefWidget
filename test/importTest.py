@@ -8,11 +8,11 @@ import CefWidget
 reload(CefWidget)
 from CefWidget import CefBrowser
 from CefWidget import autoCefEmbed
+from CefWidget import autoInitialize
 from PySide.QtGui import *
 from PySide.QtCore import *
 # from Qt.QtWidgets import *
 
-CefWidget.initialize()
 
 class TestWidget(QWidget):
 
@@ -30,7 +30,7 @@ class TestWidget(QWidget):
         m_vbox.addWidget(m_button)
 
         m_button = QPushButton("load model Asset")
-        m_button.clicked.connect(lambda:self.view.loadAsset(r"C:\Users\timmyliang\Desktop\test.fbx"))
+        m_button.clicked.connect(lambda:self.view.loadAsset(r"D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_High.fbx"))
         m_vbox.addWidget(m_button)
         
         m_button = QPushButton("Reload Url")
@@ -88,7 +88,7 @@ class TestWidget(QWidget):
         layout.addWidget(container2)
         self.setLayout(layout)
 
-
+@autoInitialize
 def main():
     app_flag = True
     try:

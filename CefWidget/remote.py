@@ -11,6 +11,7 @@ import os
 import sys
 import time
 import socket
+import signal
 import platform
 
 from cefpython3 import cefpython as cef
@@ -46,7 +47,7 @@ class RemoteBrowser(object):
         self.host = socket.gethostname() 
         self.port= int(sys.argv[1])
         self.s.bind((self.host, self.port))   
-        self.s.listen(2)
+        self.s.listen(5)
         
         # NOTE Initialize CEF
         cef.Initialize({
@@ -112,7 +113,8 @@ class RemoteBrowser(object):
                 self.resize_protect2 = time.time()
                 for _,collections in self.browser_dict.items():
                     self.resize(collections)
-      
+     
+        
 
             try:
                 client,addr = self.s.accept()     
@@ -120,7 +122,11 @@ class RemoteBrowser(object):
                 continue
 
             data = client.recv(1024)
-        
+
+            # NOTE 终止 socket
+            if data == "terminate":
+                break
+
             # NOTE change to specfic type
             arg_list = [arg for arg in data.split(";;")]
             collections = self.browser_dict.get(arg_list[1])
@@ -128,6 +134,7 @@ class RemoteBrowser(object):
             if func_name == "stop":
                 del self.browser_dict[arg_list[1]]
                 continue
+            
             elif func_name == "createBrowser" and not collections:
                 url = arg_list[2]
                 winId = int(arg_list[1])
@@ -164,7 +171,5 @@ class RemoteBrowser(object):
         cef.Shutdown()
 
 if __name__ == "__main__":
-    print "launch"
     remote = RemoteBrowser()
     remote.start()
-    print "terminate"
