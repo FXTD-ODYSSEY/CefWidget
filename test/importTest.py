@@ -1,6 +1,6 @@
-
+import os
 import sys
-MODULE = r"C:\Users\timmyliang\Desktop\repo\CefWidget"
+MODULE = os.path.join(__file__,"..","..") 
 if MODULE not in sys.path:
     sys.path.append(MODULE)
 
@@ -26,7 +26,7 @@ class TestWidget(QWidget):
         
         m_vbox = QVBoxLayout()
         m_button = QPushButton("Change Url")
-        m_button.clicked.connect(lambda:self.view.loadUrl(r"C:\Users\timmyliang\Desktop\repo\CefWidget\CefWidget\editor\index.html"))
+        m_button.clicked.connect(lambda:self.view.loadUrl(r"EDITOR"))
         m_vbox.addWidget(m_button)
 
         m_button = QPushButton("load model Asset")

@@ -154,7 +154,8 @@ class RemoteBrowser(object):
             elif func_name in self.callback_dict and collections:
                 ret = self.callback_dict[func_name](collections,*arg_list[2:])
 
-            # client.send(str(ret))
+            if ret:
+                client.send(str(ret))
         
         client.close() 
         self.s.close()

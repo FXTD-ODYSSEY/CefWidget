@@ -97,6 +97,9 @@ class CefBrowser(QWidget):
         return False
 
     def loadUrl(self,url):
+        url = os.path.join(__file__,"..","editor","index.html") if url.lower() == "editor" else url 
+        url = os.path.realpath(url)
+        print url
         self.connect("loadUrl;;%s;;%s" % (self.browser_uuid,url))
         
     def loadAsset(self,filename):

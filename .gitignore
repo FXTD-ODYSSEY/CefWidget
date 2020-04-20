@@ -4,7 +4,7 @@
 *.pyc
 
 cefapp/
-build/
+./build/
 dist/
 webrtc_event_logs/
 blob_storage/
