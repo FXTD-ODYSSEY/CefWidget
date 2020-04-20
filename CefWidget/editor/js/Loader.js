@@ -160,7 +160,11 @@ var Loader = function ( editor ) {
 					var contents = event.target.result;
 
 					var loader = new THREE.FBXLoader();
-					var object = loader.parse( contents );
+					try{
+						var object = loader.parse( contents );
+					}catch(err) {
+						alert(err + "\nFBX 导入失败");
+					}
 
 					editor.execute( new AddObjectCommand( object ) );
 

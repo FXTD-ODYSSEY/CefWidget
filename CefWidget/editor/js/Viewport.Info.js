@@ -90,7 +90,7 @@ Viewport.Info = function (editor) {
 					if (geometry instanceof THREE.Geometry) {
 
 						vertices += geometry.vertices.length;
-						console.log("Geometry vertices", vertices)
+						// console.log("Geometry vertices", vertices)
 						triangles += geometry.faces.length;
 
 					} else if (geometry instanceof THREE.BufferGeometry) {
@@ -98,13 +98,13 @@ Viewport.Info = function (editor) {
 						if (geometry.index !== null) {
 
 							vertices += geometry.index.count / 3;
-							console.log("BufferGeometry vertices", vertices)
+							// console.log("BufferGeometry vertices", vertices)
 							triangles += geometry.index.count;
 
 						} else {
 
 							vertices += geometry.attributes.position.count;
-							console.log("vertices", vertices)
+							// console.log("vertices", vertices)
 							triangles += geometry.attributes.position.count / 3;
 
 						}

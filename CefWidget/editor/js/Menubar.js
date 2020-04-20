@@ -7,7 +7,7 @@ var Menubar = function ( editor ) {
 	var container = new UI.Panel();
 	container.setId( 'menubar' );
 
-	var text = new UI.Text("在线三维编辑器 ver 1.0")
+	var text = new UI.Text("Zeus 三维浏览器")
 	text.setId( 'title' );
 	container.add(text)
 	text.dom.style.cssText = `
