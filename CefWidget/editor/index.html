@@ -177,7 +177,7 @@
 	<script src="plugin/html5tooltips.min.js"></script>
 	<link href="plugin/html5tooltips.min.css" rel="stylesheet">
 
-	
+
 
 	<!-- <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="qyqgfqd9j8z890t"></script> -->
 
@@ -218,7 +218,7 @@
 
 	<script>
 
-		
+
 
 		$('#title').css({
 			"text-align": "center",
@@ -255,18 +255,18 @@
 		document.body.appendChild(player.dom);
 
 		var toolbar = new Toolbar(editor);
-		$(toolbar.dom).css("width","100%")
-		document.body.appendChild( toolbar.dom );
+		$(toolbar.dom).css("width", "100%")
+		document.body.appendChild(toolbar.dom);
 
 		var menubar = new Menubar(editor);
 		document.body.appendChild(menubar.dom);
 
 		var sidebar = new Sidebar(editor);
-		document.body.appendChild( sidebar.dom );
+		document.body.appendChild(sidebar.dom);
 
 		var modal = new UI.Modal();
 		document.body.appendChild(modal.dom);
-		
+
 		editor.clear();
 		$("#toolbar").hide()
 		$("#info").hide()
@@ -354,16 +354,13 @@
 
 		}, false);
 
+		// NOTE 取消拖拽加载路径
 		document.addEventListener('drop', function (event) {
-
 			event.preventDefault();
-
 			if (event.dataTransfer.files.length > 0) {
 				// console.log(event.dataTransfer.files)
 				editor.loader.loadFile(event.dataTransfer.files[0]);
-
 			}
-
 		}, false);
 
 		function onWindowResize(event) {
@@ -404,28 +401,81 @@
 
 		// }
 
+		function retrieveScence4material(data) {
+			// NOTE 去掉模型加载
+			delete data["model"];
+			var scene = editor.scene;
+			var limitCount = 0;
+			var material = new THREE.MeshStandardMaterial()
+			map_data = {
+				'albedo':'map',
+				'bump':'bumpMap',
+				'roughness':'roughnessMap',
+				'specular':'metalnessMap',
+				'opacity':'alphaMap',
+				'normal':'normalMap',
+				// 'displacement':'displacementMap',
+			}
+			for(typ in data){
+				var attr = map_data[typ]
+				if (attr){
+					var tex = new THREE.TextureLoader().load(data[typ]);
+					tex.sourceFile = data[typ].split('/').pop();
+					material[attr] = tex
+				}
+			}
+			
+			for (var i = 0, l = scene.children.length; i < l; i++) {
 
+				var object = scene.children[i];
+
+				object.traverseVisible(function (object) {
+
+					// if (limitCount > 2) {
+					// 	return
+					// }
+					if (object instanceof THREE.Mesh) {
+						// limitCount += 1
+						object.material = material
+					}
+
+				});
+
+			}
+		}
 		// python 调用用于加载模型路径
-		function loadAsset(filename){
+		function loadAsset(data) {
+			data = JSON.parse(data)
+			model_path = data.model
 
-			// https://wangdoc.com/javascript/bom/file.html
 			var loader = new THREE.FileLoader();
-			loader.load(filename, function (text) {
+			loader.load(model_path, function (text) {
+				// https://wangdoc.com/javascript/bom/file.html
 				var file = new File(
 					[text],
-					filename,
+					model_path,
 					{}
 				);
 				editor.clear();
-				editor.loader.loadFile(file);
+				editor.loader.loadFile(file,()=>retrieveScence4material(data));
 				editor.controls.focus(editor.scene);
-			},function ( xhr ) {
-				console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
-			},function(err){
+
+			}, function (xhr) {
+				console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+			}, function (err) {
 				alert(err);
 			});
 		}
+		
+		// loadAsset('{"opacity": "D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_4K_Opacity.jpg", "normal": "D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_4K_Normal.jpg", "bump": "D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_4K_Bump.jpg", "displacement": "D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_4K_Displacement.jpg", "roughness": "D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_4K_Roughness.jpg", "specular": "D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_4K_Specular.jpg", "model": "D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_High.fbx", "albedo": "D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_4K_Albedo.jpg"}')
+		// function checkFileExists(url){
+		// 	var request = new XMLHttpRequest();
+		// 	request.open( 'GET', url, true );
+		// 	try{
+		// 		request.send()
 
+		// 	}catch (e) {}
+		// }
 		/*
 		window.addEventListener( 'message', function ( event ) {
 

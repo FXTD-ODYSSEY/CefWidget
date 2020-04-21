@@ -9,7 +9,7 @@ var Loader = function ( editor ) {
 
 	this.texturePath = '';
 
-	this.loadFile = function ( file ) {
+	this.loadFile = function ( file ,callback) {
 
 		var filename = file.name;
 		var extension = filename.split( '.' ).pop().toLowerCase();
@@ -167,6 +167,7 @@ var Loader = function ( editor ) {
 					}
 
 					editor.execute( new AddObjectCommand( object ) );
+					callback()
 
 				}, false );
 				reader.readAsArrayBuffer( file );
@@ -324,6 +325,7 @@ var Loader = function ( editor ) {
                          
                     
 					editor.execute( new AddObjectCommand( objects ) );
+					callback()
 
 				}, false );
 				reader.readAsText( file );
