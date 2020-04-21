@@ -56,6 +56,8 @@ Viewport.RightMenu = function ( editor ) {
 	var main_toggle = true;
 
 	//添加按钮的CSS样式
+	var pos = 45
+	var h = 80
 	var main_css = $("<style></style>").text(`
 	#container {
 		position: absolute;
@@ -72,7 +74,7 @@ Viewport.RightMenu = function ( editor ) {
 	}
 	#main {
 		position: fixed;
-		bottom: 20px;
+		bottom: 10px;
 		right: 20px;
 		padding: 1px 15px;
 		color: #fff;
@@ -89,7 +91,7 @@ Viewport.RightMenu = function ( editor ) {
 	}
 	#front_view {
 		position: fixed;
-		bottom: 100px;
+		bottom: ${pos*0 + h}px;
 		right: 30px;
 		padding: 5px 5px;
 		color: #fff;
@@ -101,7 +103,7 @@ Viewport.RightMenu = function ( editor ) {
 	}
 	#side_view {
 		position: fixed;
-		bottom: 150px;
+		bottom: ${pos*1 + h}px;
 		right: 30px;
 		padding: 5px 5px;
 		color: #fff;
@@ -113,7 +115,7 @@ Viewport.RightMenu = function ( editor ) {
 	}
 	#top_view {
 		position: fixed;
-		bottom: 200px;
+		bottom: ${pos*2 + h}px;
 		right: 30px;
 		padding: 5px 5px;
 		color: #fff;
@@ -125,7 +127,7 @@ Viewport.RightMenu = function ( editor ) {
 	}
 	#perps_view {
 		position: fixed;
-		bottom: 250px;
+		bottom: ${pos*3 + h}px;
 		right: 30px;
 		padding: 5px 5px;
 		color: #fff;
@@ -137,7 +139,7 @@ Viewport.RightMenu = function ( editor ) {
 	}
 	#sidebar_toggle {
 		position: fixed;
-		bottom: 300px;
+		bottom: ${pos*4 + h}px;
 		right: 30px;
 		padding: 5px 5px;
 		color: #fff;
@@ -149,7 +151,7 @@ Viewport.RightMenu = function ( editor ) {
 	}
 	#info_toggle {
 		position: fixed;
-		bottom: 350px;
+		bottom: ${pos*5 + h}px;
 		right: 30px;
 		padding: 5px 5px;
 		color: #fff;
