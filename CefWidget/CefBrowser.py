@@ -190,7 +190,12 @@ def teminateRemote():
 
 def autoInitialize(func):
     def wrapper(*args,**kwargs):
-        initialize()
+        try:
+            teminateRemote()
+            initialize()
+        except:
+            initialize()
+
         try:
             res = func()
         except:
