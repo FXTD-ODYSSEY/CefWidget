@@ -94,7 +94,8 @@ THREE.EditorControls = function ( object, domElement ,editor) {
 			scope.camera.position.add( delta);
 		}else{
 			delta.applyMatrix3( normalMatrix.getNormalMatrix( scope.camera.matrix ) );
-			mod = 50;
+			mod = 30;
+			delta.multiply(scope.camera.scale)
 			scope.camera.position.add( new THREE.Vector3(delta.x/mod,delta.y/mod,delta.z/mod));
 		}
 
