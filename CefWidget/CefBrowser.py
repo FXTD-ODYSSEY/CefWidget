@@ -191,8 +191,13 @@ def teminateRemote():
 def autoInitialize(func):
     def wrapper(*args,**kwargs):
         initialize()
-        res = func()
-        teminateRemote()
+        try:
+            res = func()
+        except:
+            import traceback
+            traceback.print_exc()
+        finally:
+            teminateRemote()
         return res
     return wrapper
 
