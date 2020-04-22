@@ -13,6 +13,7 @@ import os
 import sys
 import time
 import uuid
+import json
 import signal
 import ctypes
 import socket
@@ -100,11 +101,10 @@ class CefBrowser(QWidget):
     def loadUrl(self,url):
         url = os.path.join(__file__,"..","editor","index.html") if url.lower() == "editor" else url 
         url = os.path.realpath(url)
-        print url
         self.connect("loadUrl;;%s;;%s" % (self.browser_uuid,url))
         
-    def loadAsset(self,filename):
-        self.connect("loadAsset;;%s;;%s" % (self.browser_uuid,filename))
+    def loadAsset(self,data):
+        self.connect("loadAsset;;%s;;%s" % (self.browser_uuid,json.dumps(data) if type(data) is dict else json.dumps({'model':data}) if os.path.exists(data) else data))
 
     def getUrl(self):
         return self.connect("getUrl;;%s" % self.browser_uuid,recv=True)
@@ -198,12 +198,13 @@ def autoInitialize(func):
 
         try:
             res = func()
+            return res
         except:
             import traceback
             traceback.print_exc()
         finally:
             teminateRemote()
-        return res
+
     return wrapper
 
 def autoCefEmbed(cef_callback=None):

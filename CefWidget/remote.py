@@ -88,7 +88,7 @@ class RemoteBrowser(object):
 
         self.callback_dict = {
             # NOTE 确保加载完成再触发 模型加载 命令
-            'loadAsset':lambda collections,filename: collections.load_handler.dispatcher.connectEventList(lambda:collections.browser.ExecuteFunction("loadAsset",filename)) if collections.browser else None ,
+            'loadAsset':lambda collections,data: collections.load_handler.dispatcher.connectEventList(lambda:collections.browser.ExecuteFunction("loadAsset",data)) if collections.browser else None ,
             'loadUrl':lambda collections,url: collections.browser.LoadUrl(url) if collections.browser and collections.browser.GetUrl() != url else None ,
             'getUrl':lambda collections: collections.browser.GetUrl() if collections.browser else None ,
             'goBack':lambda collections: collections.browser.GoBack() if collections.browser and collections.browser.CanGoBack() else None ,

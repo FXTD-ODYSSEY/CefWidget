@@ -30,7 +30,7 @@ class TestWidget(QWidget):
         m_vbox.addWidget(m_button)
 
         m_button = QPushButton("load model Asset")
-        m_button.clicked.connect(lambda:self.view.loadAsset(r"D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_High.fbx"))
+        m_button.clicked.connect(lambda:self.view.loadAsset("D:/Users/82047/Desktop/Debris_Plant_Stalk_qhxmOD/Dbrs_plant_stalk_T_qhxmOD_High.fbx"))
         m_vbox.addWidget(m_button)
         
         m_button = QPushButton("Reload Url")
@@ -100,6 +100,6 @@ def main():
     ex.show()
 
     if app_flag:
-        sys.exit(app.exec_())
+        app.exec_()
     
 main()
