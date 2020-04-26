@@ -57,6 +57,7 @@ class CefBrowser(QWidget):
         self.hidden_window = None  # Required for PyQt5 on Linux
         self.resize_flag = False  
         self.port = None  
+        # NOTE 如果没有 url 自动连接到 github 仓库 | 如果传入 editor 自动转为本地 WebGL 编辑器路径
         self.url = "https://github.com/FXTD-ODYSSEY/CefWidget"  if not url else os.path.join(__file__,"..","editor","index.html")  if url.lower() == "editor" else url
     
     def connect(self,data,recv=False):
@@ -99,8 +100,7 @@ class CefBrowser(QWidget):
         return False
 
     def loadUrl(self,url):
-        url = os.path.join(__file__,"..","editor","index.html") if url.lower() == "editor" else url 
-        url = os.path.realpath(url)
+        url = os.path.realpath(os.path.join(__file__,"..","editor","index.html")) if url.lower() == "editor" else url 
         self.connect("loadUrl;;%s;;%s" % (self.browser_uuid,url))
         
     def loadAsset(self,data):
@@ -164,21 +164,29 @@ class CefBrowser(QWidget):
 def initialize(port=None):
 
     global PORT
-    PORT = port if port else PORT
+    port = port if port else PORT
 
-    remote = os.path.join(DIR,"cefapp","cefapp.exe")
-    remote = os.path.join(DIR,"cefapp",".exe")
+    remote = os.path.join(DIR,"remote.py")
     if not os.path.exists(remote):
         try:
-            remote = os.path.join(DIR,"remote.py")
-            server = subprocess.Popen([sys.executable,remote,str(PORT)],shell=True)
+            remote = os.path.join(DIR,"cefapp","cefapp.exe")
+            server = subprocess.Popen([remote,str(PORT)],shell=True)
         except:
             raise RuntimeError(u"cefapp folder not found \nplease download it from the github repo release\nhttps://github.com/FXTD-ODYSSEY/CefWidget/releases")
     else:
-        server = subprocess.Popen([remote,str(port)],shell=True)
+        server = subprocess.Popen([sys.executable,remote,str(PORT)],shell=True)
 
     # NOTE 等待 socket 服务器启动
-    time.sleep(1)
+    sock = socket.socket()
+    update_time = time.time()
+    while True:
+        if time.time() - update_time < .1:continue
+        update_time = time.time()
+        try:
+            sock.connect((socket.gethostname(), PORT))
+            break
+        except:
+            continue
 
     return server
 
@@ -189,6 +197,7 @@ def teminateRemote():
     sock.close()
 
 def autoInitialize(func):
+    @wraps(func)
     def wrapper(*args,**kwargs):
         try:
             teminateRemote()
