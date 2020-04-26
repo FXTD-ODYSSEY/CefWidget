@@ -83,7 +83,7 @@ Menubar.File = function (editor) {
 
 	var option = new UI.Row();
 	option.setClass('option');
-	option.setTextContent('发布');
+	option.setTextContent('保存');
 	option.onClick(function () {
 
 		//		var zip = new JSZip();
@@ -94,35 +94,35 @@ Menubar.File = function (editor) {
 		output.camera.object.control = true;
 		delete output.history;
 
-		var vr = output.project.vr;
+		// var vr = output.project.vr;
 		output = JSON.stringify(output, parseNumber, '\t');
 		output = output.replace(/[\n\t]+([\d\.e\-\[\]]+)/g, '$1');
 
+		$('#uploadText').fadeToggle(1000);
+		$('#background_block').fadeToggle(1000);
 
-		text = new UI.Text("尚未开发完成")
-		editor.signals.showModal.dispatch(text);
+		var form = new FormData();
+		form.append("data", output);
+		form.append("format", "json");
 
-		// $('#uploadText').fadeToggle(1000);
-		// $('#background_block').fadeToggle(1000);
+		var settings = {
+		  "async": true,
+		  "crossDomain": true,
+		  "url": window.location.host + "/api/upload/model",
+		  "method": "POST",
+		  "processData": false,
+		  "contentType": false,
+		  "mimeType": "multipart/form-data",
+		  "data": form
+		}
 
-		// var form = new FormData();
-		// form.append("data", output);
-		// form.append("format", "json");
-
-		// var settings = {
-		//   "async": true,
-		//   "crossDomain": true,
-		//   "url": "http://3d.suiyuankj.com/api/webgl.index/upstr",
-		//   "method": "POST",
-		//   "processData": false,
-		//   "contentType": false,
-		//   "mimeType": "multipart/form-data",
-		//   "data": form
-		// }
-
-		// $.ajax(settings).done(function (response) {
-		//       window.location.href="http://3d.suiyuankj.com/manage/model/windclose";
-		// });
+		$.ajax(settings).done(function (response) {
+			$('#uploadText').fadeToggle(1000);
+			$('#background_block').fadeToggle(1000);
+			text = new UI.Text("上传成功")
+			editor.signals.showModal.dispatch(text);
+		    //   window.location.href="http://3d.suiyuankj.com/manage/model/windclose";
+		});
 
 
 	});

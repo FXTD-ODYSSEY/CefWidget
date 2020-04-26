@@ -99,9 +99,6 @@ THREE.EditorControls = function ( object, domElement ,editor) {
 			scope.camera.position.add( new THREE.Vector3(delta.x/mod,delta.y/mod,delta.z/mod));
 		}
 
-
-		// console.log(delta)
-		// console.log(scope.camera.position)
 		center.add( delta );
 
 		scope.dispatchEvent( changeEvent );

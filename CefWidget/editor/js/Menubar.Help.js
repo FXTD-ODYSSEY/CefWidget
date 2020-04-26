@@ -29,15 +29,20 @@ Menubar.Help = function ( editor ) {
 		
 		var hr = new UI.HorizontalRule();
 		panel.add(hr)
+		
 		var help1 = new UI.Text("左键控制镜头旋转")
-		var help2 = new UI.Text("右键控制镜头平移")
-		var help3 = new UI.Text("滚轮控制镜头缩放")
-		
-		
 		panel.add(help1)
+		var help2 = new UI.Text("右键控制镜头平移")
 		panel.add(help2)
+		var help3 = new UI.Text("滚轮控制镜头缩放")
 		panel.add(help3)
 		
+		var hr = new UI.HorizontalRule();
+		panel.add(hr)
+		
+		var help4 = new UI.Text("右下角有主菜单按钮")
+		panel.add(help4)
+
 		editor.signals.showModal.dispatch(panel);
 		//window.open( 'https://github.com/mrdoob/three.js/tree/master/editor', '_blank' )
 
@@ -66,7 +71,7 @@ Menubar.Help = function ( editor ) {
 		// window.open( 'http://www.suiyuankj.com', '_blank' );
 
 	} );
-	options.add( option );
+	// options.add( option );
 
 	return container;
 

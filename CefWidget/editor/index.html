@@ -374,32 +374,27 @@
 		onWindowResize();
 
 		//
+		
+		// NOTE 自动读取的传入的 json 路径
+		var hash = window.location.hash;
+		if (hash.substr(1, 5) === 'file=') {
 
-		// var isLoadingFromHash = false;
-		// var hash = window.location.hash;
-		// console.log(hash)
-		// console.log(hash.substr(1, 5))
-		// console.log(hash)
-		// if (hash.substr(1, 16) === 'index.html?file=') {
+			var file = window.location.host + "/static/model/" + hash.substr(6);
 
-		// 	var file = hash.substr(6);
+			//				if ( confirm( 'Any unsaved data will be lost. Are you sure?' ) ) {
 
-		// 	//				if ( confirm( 'Any unsaved data will be lost. Are you sure?' ) ) {
+			var loader = new THREE.FileLoader();
+			loader.crossOrigin = '';
+			loader.load(file, function (text) {
 
-		// 	var loader = new THREE.FileLoader();
-		// 	loader.crossOrigin = '';
-		// 	loader.load(file, function (text) {
+				editor.clear();
+				editor.fromJSON(JSON.parse(text));
 
-		// 		editor.clear();
-		// 		editor.fromJSON(JSON.parse(text));
+			});
 
-		// 	});
+			//				}
 
-		// 	isLoadingFromHash = true;
-
-		// 	//				}
-
-		// }
+		}
 
 		function retrieveScence4material(data) {
 			// NOTE 去掉模型加载
